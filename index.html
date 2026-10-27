@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>造梦星环二次元宇宙 - 究极二次元知识挑战赛</title>
+    <title>造梦星环二次元宇宙 - 究极二次元知识挑战赛 (密码保护版)</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -46,12 +46,24 @@
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #0f1020; color: #f3f4f6; }
         .glass-panel { background: rgba(24, 27, 51, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
-        /* Custom scrollbar */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #0f1020; }
         ::-webkit-scrollbar-thumb { background: #2e335a; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #9d4edd; }
     </style>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, getDocs, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        window.firebaseModules = {
+            initializeApp, getAuth, signInAnonymously, onAuthStateChanged,
+            getFirestore, collection, addDoc, getDocs, query
+        };
+    </script>
+
     <script>
         // ================= GLOBAL STATE & DATA =================
         const DEFAULT_CATEGORIES = [
@@ -93,7 +105,6 @@
         ];
 
         const DEFAULT_QUESTIONS = [
-            // 萌新村 - 选择题
             {
                 id: 'q1',
                 category: 'novice',
@@ -103,9 +114,8 @@
                 options: ['与生俱来的胎记', '被鬼袭击留下的伤疤', '修炼水之呼吸烫伤的', '继承自父亲的日轮耳饰力量'],
                 answer: 1,
                 analysis: '炭治郎最初额头左侧的伤疤是在小时候为了保护弟弟被滚烫的水壶烫伤的，后来在战斗中演变成真正的斑纹。',
-                timer: 15
+                timer: 20
             },
-            // 萌新村 - 填空题
             {
                 id: 'q2',
                 category: 'novice',
@@ -115,9 +125,8 @@
                 options: [],
                 answer: '影',
                 analysis: '“我要成为火影！”是贯穿整部《火影忍者》的核心热血信念。',
-                timer: 20
+                timer: 25
             },
-            // 殿堂级 - 图像鉴赏题
             {
                 id: 'q3',
                 category: 'master',
@@ -127,9 +136,8 @@
                 options: ['虎杖悠仁', '伏黑惠', '五条悟', '两面宿傩'],
                 answer: 2,
                 analysis: '五条悟拥有无下限术式，其标志性的反转与顺转合击能释放出恐怖的虚式「茈」。',
-                timer: 15
+                timer: 20
             },
-            // 殿堂级 - 填空题
             {
                 id: 'q4',
                 category: 'master',
@@ -139,9 +147,8 @@
                 options: [],
                 answer: '心脏',
                 analysis: '“献出心脏！”（Shinzou wo Sasageyo!）是调查兵团最为震撼的信仰与口号。',
-                timer: 20
+                timer: 25
             },
-            // 究极肝帝 - 选择题
             {
                 id: 'q5',
                 category: 'hardcore',
@@ -151,7 +158,7 @@
                 options: ['《鬼灭之刃》', '《Fate/Zero》', '《进击的巨人》', '《空之境界》'],
                 answer: 2,
                 analysis: '《进击的巨人》前三季由WIT STUDIO（霸权社）制作，第四季由MAPPA制作，而飞碟社代表作有鬼灭、Fate系列与空之境界。',
-                timer: 15
+                timer: 20
             }
         ];
 
@@ -163,25 +170,94 @@
         let score = 0;
         let correctCount = 0;
         let timer = null;
-        let timeLeft = 15;
+        let timeLeft = 20;
+        let editingQuestionId = null;
 
-        // Load data on start
+        // Firebase Cloud & Auth State
+        let db = null;
+        let auth = null;
+        let currentUser = null;
+        let firebaseAppInstance = null;
+
+        // CMS Admin Auth State (default password is 'dp123456')
+        let isAdminAuthenticated = false;
+
         function initData() {
-            const savedCats = localStorage.getItem('anime_quiz_categories');
-            const savedQs = localStorage.getItem('anime_quiz_questions');
+            const savedCats = localStorage.getItem('anime_quiz_categories_v3');
+            const savedQs = localStorage.getItem('anime_quiz_questions_v3');
 
             categories = savedCats ? JSON.parse(savedCats) : DEFAULT_CATEGORIES;
             questions = savedQs ? JSON.parse(savedQs) : DEFAULT_QUESTIONS;
         }
 
         function saveData() {
-            localStorage.setItem('anime_quiz_categories', JSON.stringify(categories));
-            localStorage.setItem('anime_quiz_questions', JSON.stringify(questions));
+            localStorage.setItem('anime_quiz_categories_v3', JSON.stringify(categories));
+            localStorage.setItem('anime_quiz_questions_v3', JSON.stringify(questions));
         }
 
-        // ================= NAVIGATION =================
+        // ================= NAVIGATION & CMS PROTECTION =================
+        function requestCmsAccess() {
+            if (isAdminAuthenticated) {
+                switchView('cms');
+                return;
+            }
+            showPasswordModal();
+        }
+
+        function showPasswordModal() {
+            let modal = document.getElementById('password-modal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'password-modal';
+                modal.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4';
+                document.body.appendChild(modal);
+            }
+
+            modal.innerHTML = `
+                <div class="glass-panel p-8 rounded-3xl max-w-md w-full border border-fuchsia-500/40 shadow-2xl space-y-5 animate-float">
+                    <div class="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-tr from-fuchsia-600 to-cyan-400 flex items-center justify-center text-white text-2xl shadow-neon">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <div class="text-center space-y-1">
+                        <h3 class="text-xl font-black text-white">管理员权限验证</h3>
+                        <p class="text-gray-300 text-xs">访客模式无法直接修改题库。请输入管理员密码以进入 CMS 后台（默认密码: <span class="text-cyan-400 font-mono">dp123456</span>）。</p>
+                    </div>
+                    <div class="space-y-3">
+                        <input type="password" id="admin-password-input" placeholder="请输入管理员密码..." class="w-full px-4 py-3.5 rounded-xl bg-anime-dark border border-anime-border text-white focus:outline-none focus:border-cyan-400 font-mono text-sm shadow-inner" onkeydown="if(event.key==='Enter') verifyAdminPassword()">
+                        <div class="flex gap-3">
+                            <button onclick="document.getElementById('password-modal').remove()" class="w-1/2 py-3 rounded-xl bg-anime-dark hover:bg-anime-border border border-anime-border text-gray-300 font-semibold text-xs transition-all">
+                                取消返回
+                            </button>
+                            <button onclick="verifyAdminPassword()" class="w-1/2 py-3 rounded-xl bg-gradient-to-r from-fuchsia-600 to-cyan-500 hover:from-fuchsia-500 text-white font-bold text-xs shadow-neon transition-all">
+                                验证并进入
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            setTimeout(() => {
+                const input = document.getElementById('admin-password-input');
+                if (input) input.focus();
+            }, 100);
+        }
+
+        function verifyAdminPassword() {
+            const inputVal = document.getElementById('admin-password-input').value.trim();
+            const correctPassword = localStorage.getItem('anime_admin_pwd') || 'dp123456';
+
+            if (inputVal === correctPassword) {
+                isAdminAuthenticated = true;
+                const modal = document.getElementById('password-modal');
+                if (modal) modal.remove();
+                showCustomModal('验证成功', '欢迎进入题库管理后台！', 'fa-circle-check');
+                switchView('cms');
+            } else {
+                showCustomModal('密码错误', '密码不正确，拒绝访问管理后台！', 'fa-triangle-exclamation');
+            }
+        }
+
         function switchView(viewName) {
-            ['home', 'quiz', 'result', 'cms'].forEach(v => {
+            ['home', 'quiz', 'result', 'cms', 'leaderboard', 'auth'].forEach(v => {
                 const el = document.getElementById(`view-${v}`);
                 if (el) el.classList.add('hidden');
             });
@@ -194,8 +270,145 @@
             } else if (viewName === 'cms') {
                 renderCMSCategoriesList();
                 renderCMSQuestionsTable();
+            } else if (viewName === 'leaderboard') {
+                fetchAndRenderLeaderboard();
             }
             window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ================= FIREBASE CLOUD SETUP & AUTH =================
+        function initFirebaseClient(apiKey, authDomain, projectId) {
+            try {
+                const { initializeApp, getAuth, getFirestore, onAuthStateChanged, signInAnonymously } = window.firebaseModules;
+                const firebaseConfig = { apiKey, authDomain, projectId, storageBucket: projectId + ".appspot.com", messagingSenderId: "1234567890", appId: "1:1234567890:web:abcdef" };
+                
+                firebaseAppInstance = initializeApp(firebaseConfig);
+                auth = getAuth(firebaseAppInstance);
+                db = getFirestore(firebaseAppInstance);
+
+                onAuthStateChanged(auth, (user) => {
+                    currentUser = user;
+                    updateAuthUI();
+                });
+
+                signInAnonymously(auth).catch(err => console.log("Anonymous auth fallback:", err));
+                
+                document.getElementById('cloud-status-badge').innerHTML = `<span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse mr-1"></span> 云端已连接`;
+                showCustomModal('云端连接成功', '已成功连接至 Firebase 云端数据库与排行榜服务！', 'fa-cloud');
+            } catch (e) {
+                console.error("Firebase init error:", e);
+                showCustomModal('连接提示', '使用离线默认模式。当前已启用本地存储与本地排行榜存档。', 'fa-triangle-exclamation');
+            }
+        }
+
+        function handleFirebaseConfigSubmit(e) {
+            e.preventDefault();
+            const apiKey = document.getElementById('fb-api-key').value.trim();
+            const authDomain = document.getElementById('fb-auth-domain').value.trim();
+            const projectId = document.getElementById('fb-project-id').value.trim();
+
+            if (!apiKey || !projectId) {
+                showCustomModal('提示', '请填写完整的 Firebase API Key 和 Project ID！', 'fa-triangle-exclamation');
+                return;
+            }
+
+            localStorage.setItem('anime_fb_config', JSON.stringify({ apiKey, authDomain, projectId }));
+            initFirebaseClient(apiKey, authDomain, projectId);
+            switchView('home');
+        }
+
+        function updateAuthUI() {
+            const userBadge = document.getElementById('current-user-badge');
+            if (!userBadge) return;
+
+            if (currentUser) {
+                const name = currentUser.displayName || (currentUser.isAnonymous ? `匿名宅神_${currentUser.uid.slice(0,4)}` : currentUser.email);
+                userBadge.innerHTML = `<i class="fa-solid fa-user-astronaut text-cyan-400 mr-1"></i> ${name}`;
+            } else {
+                userBadge.innerHTML = `<i class="fa-solid fa-user-slash text-gray-400 mr-1"></i> 未登录`;
+            }
+        }
+
+        async function submitScoreToCloud(scoreVal, accuracyVal, catName) {
+            if (!db || !auth) {
+                console.log("Offline mode: score saved locally.");
+                return;
+            }
+
+            try {
+                const { collection, addDoc } = window.firebaseModules;
+                const nickname = currentUser && currentUser.displayName ? currentUser.displayName : (currentUser ? `星环宅神_${currentUser.uid.slice(0,4)}` : '神秘路人');
+                
+                await addDoc(collection(db, "artifacts", "anime_quiz_universe_v3", "public", "data", "leaderboard"), {
+                    userId: currentUser ? currentUser.uid : 'guest_' + Math.random(),
+                    nickname: nickname,
+                    score: scoreVal,
+                    accuracy: accuracyVal,
+                    category: catName,
+                    createdAt: new Date().toISOString()
+                });
+                console.log("战绩已成功上传至云端全球排行榜！");
+            } catch (e) {
+                console.error("上传云端排行榜失败:", e);
+            }
+        }
+
+        async function fetchAndRenderLeaderboard() {
+            const tbody = document.getElementById('leaderboard-tbody');
+            if (!tbody) return;
+
+            tbody.innerHTML = `<tr><td colspan="4" class="text-center py-8 text-gray-400"><i class="fa-solid fa-spinner fa-spin mr-2"></i> 正在加载全球排行榜数据...</td></tr>`;
+
+            if (!db) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-8 text-yellow-400">当前处于离线模式。您可以点击右上角「云端设置」配置您的 Firebase 后端以启用全球排行榜。</td></tr>`;
+                return;
+            }
+
+            try {
+                const { collection, getDocs, query } = window.firebaseModules;
+                const q = query(collection(db, "artifacts", "anime_quiz_universe_v3", "public", "data", "leaderboard"));
+                const querySnapshot = await getDocs(q);
+                
+                const leaders = [];
+                querySnapshot.forEach((doc) => {
+                    leaders.push(doc.data());
+                });
+
+                leaders.sort((a, b) => b.score - a.score);
+                const top100 = leaders.slice(0, 100);
+
+                tbody.innerHTML = '';
+                if (top100.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="4" class="text-center py-8 text-gray-400">暂无排行数据，快去完成一次挑战抢占榜首吧！</td></tr>`;
+                    return;
+                }
+
+                top100.forEach((item, idx) => {
+                    const tr = document.createElement('tr');
+                    tr.className = 'border-b border-anime-border/50 hover:bg-anime-border/20 transition-colors';
+                    
+                    let rankBadge = `<span class="font-mono text-xs text-gray-400">#${idx + 1}</span>`;
+                    if (idx === 0) rankBadge = `<span class="px-2 py-1 rounded-full bg-amber-500/20 text-amber-300 text-xs font-bold border border-amber-500/30"><i class="fa-solid fa-crown mr-1"></i>#1</span>`;
+                    if (idx === 1) rankBadge = `<span class="px-2 py-1 rounded-full bg-slate-300/20 text-slate-200 text-xs font-bold border border-slate-300/30">#2</span>`;
+                    if (idx === 2) rankBadge = `<span class="px-2 py-1 rounded-full bg-amber-700/20 text-amber-400 text-xs font-bold border border-amber-700/30">#3</span>`;
+
+                    tr.innerHTML = `
+                        <td class="py-4 px-4">${rankBadge}</td>
+                        <td class="py-4 px-4 font-bold text-white flex items-center space-x-2">
+                            <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-fuchsia-600 to-cyan-400 flex items-center justify-center text-xs text-white">
+                                <i class="fa-solid fa-user"></i>
+                            </div>
+                            <span>${item.nickname}</span>
+                        </td>
+                        <td class="py-4 px-4 font-mono text-cyan-400 font-bold">${item.score} 分</td>
+                        <td class="py-4 px-4 text-xs text-gray-300">${item.accuracy} (${item.category || '综合'})</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (e) {
+                console.error("读取排行榜失败:", e);
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-8 text-rose-400">读取云端排行榜出错，请检查 Firebase 配置。</td></tr>`;
+            }
         }
 
         // ================= HOME RENDER =================
@@ -205,7 +418,6 @@
 
             grid.innerHTML = '';
             
-            // Add All-Random Card
             const allCard = document.createElement('div');
             allCard.className = `glass-panel p-6 rounded-3xl border border-fuchsia-500/40 hover:border-fuchsia-400 transition-all duration-300 cursor-pointer group hover:scale-[1.02] shadow-xl relative overflow-hidden`;
             allCard.onclick = () => startQuiz('all');
@@ -220,7 +432,7 @@
                         <h3 class="text-xl font-bold mt-1 text-white group-hover:text-fuchsia-300 transition-colors">全模块综合挑战</h3>
                     </div>
                 </div>
-                <p class="text-gray-300 text-sm mb-6">随机抽取全库所有动漫的多模态高难度题目，测试你的究极宅神段位！</p>
+                <p class="text-gray-300 text-sm mb-6">随机抽取全库所有动漫的高难度题目，测试你的究极宅神段位并同步全球排行！</p>
                 <div class="flex items-center justify-between text-xs font-semibold text-fuchsia-400">
                     <span><i class="fa-solid fa-database mr-1"></i> 共 ${questions.length} 道题库</span>
                     <span class="flex items-center group-hover:translate-x-1 transition-transform">立即开始 <i class="fa-solid fa-arrow-right ml-1"></i></span>
@@ -228,7 +440,6 @@
             `;
             grid.appendChild(allCard);
 
-            // Render specific categories
             categories.forEach(cat => {
                 const count = questions.filter(q => q.category === cat.id).length;
                 const card = document.createElement('div');
@@ -287,15 +498,12 @@
             const q = currentQuizQuestions[currentQuestionIndex];
             const total = currentQuizQuestions.length;
 
-            // Update header info
             document.getElementById('quiz-category-title').innerText = activeCategory.name;
             document.getElementById('quiz-progress-text').innerText = `第 ${currentQuestionIndex + 1} / ${total} 题`;
             document.getElementById('quiz-progress-bar').style.width = `${((currentQuestionIndex) / total) * 100}%`;
 
-            // Question content
             document.getElementById('question-title').innerText = q.title;
 
-            // Type badge
             const typeBadge = document.getElementById('question-type-badge');
             let typeName = '选择题';
             if (q.type === 'blank') typeName = '填空题';
@@ -303,7 +511,6 @@
             if (q.type === 'video') typeName = '视频/图像鉴赏';
             typeBadge.innerHTML = `<i class="fa-solid fa-tag mr-1"></i> ${typeName}`;
 
-            // Media rendering
             const mediaContainer = document.getElementById('question-media-container');
             mediaContainer.innerHTML = '';
             if (q.mediaUrl) {
@@ -320,13 +527,6 @@
                             </audio>
                         </div>
                     `;
-                } else if (q.mediaUrl.match(/\.(mp4|webm)$/i)) {
-                    mediaContainer.innerHTML = `
-                        <video controls class="w-full max-h-64 rounded-2xl object-cover border border-anime-border">
-                            <source src="${q.mediaUrl}" type="video/mp4">
-                            您的浏览器不支持视频播放。
-                        </video>
-                    `;
                 } else {
                     mediaContainer.innerHTML = `
                         <img src="${q.mediaUrl}" alt="题目媒体" onerror="this.src='https://placehold.co/600x300/181b33/00f0ff?text=Anime+Image'" class="w-full max-h-64 rounded-2xl object-cover border border-anime-border shadow-lg">
@@ -336,7 +536,6 @@
                 mediaContainer.classList.add('hidden');
             }
 
-            // Options or Blank Input container
             const optionsContainer = document.getElementById('question-options-container');
             optionsContainer.innerHTML = '';
 
@@ -364,16 +563,13 @@
                 });
             }
 
-            // Hide analysis box
             document.getElementById('quiz-analysis-box').classList.add('hidden');
-
-            // Start Timer with Custom Question Timer (fallback to 15s)
-            startTimer(q.timer || 15);
+            startTimer(q.timer || 20);
         }
 
         function startTimer(customSeconds) {
             clearInterval(timer);
-            timeLeft = customSeconds || 15;
+            timeLeft = customSeconds || 20;
             const initialTime = timeLeft;
             const timerEl = document.getElementById('quiz-timer');
             const timerBar = document.getElementById('quiz-timer-bar');
@@ -404,7 +600,7 @@
             const isCorrect = selectedIndex === q.answer;
 
             if (isCorrect) {
-                score += 20 + timeLeft; // Bonus for quick answer
+                score += 20 + timeLeft;
                 correctCount++;
                 showAnswerFeedback(true, '回答正确！太棒了！', q.analysis);
             } else {
@@ -429,7 +625,6 @@
         }
 
         function showAnswerFeedback(isCorrect, message, analysis) {
-            // Disable options
             const container = document.getElementById('question-options-container');
             const buttons = container.querySelectorAll('button, input');
             buttons.forEach(el => el.disabled = true);
@@ -471,6 +666,8 @@
                 comment = "表现卓越！顺利通关多模态动漫宇宙！";
             }
             document.getElementById('result-comment').innerText = comment;
+
+            submitScoreToCloud(score, `${accuracy}%`, activeCategory ? activeCategory.name : '综合');
         }
 
         function shareScoreCard() {
@@ -478,7 +675,7 @@
             const accVal = document.getElementById('result-accuracy').innerText;
             const catName = activeCategory ? activeCategory.name : '综合挑战';
             
-            const shareText = `【造梦星环二次元宇宙】我在「${catName}」挑战赛中获得了 ${scoreVal} 分（正确率 ${accVal}）！快来和我一起比拼二次元知识吧：${window.location.href}`;
+            const shareText = `【造梦星环二次元宇宙】我在「${catName}」挑战赛中获得了 ${scoreVal} 分（正确率 ${accVal}）！快来和我一起比拼全球二次元知识排名吧：${window.location.href}`;
 
             const textArea = document.createElement("textarea");
             textArea.value = shareText;
@@ -486,9 +683,9 @@
             textArea.select();
             try {
                 document.execCommand('copy');
-                showCustomModal('分享成功', '战绩文案与链接已成功复制到剪贴板！快发给你的好友或分享到聊天窗口吧~', 'fa-share-nodes');
+                showCustomModal('分享成功', '战绩文案与链接已成功复制到剪贴板！', 'fa-share-nodes');
             } catch (err) {
-                showCustomModal('提示', '复制失败，请手动复制当前网页地址分享。', 'fa-triangle-exclamation');
+                showCustomModal('提示', '复制失败，请手动复制当前网页地址。', 'fa-triangle-exclamation');
             }
             document.body.removeChild(textArea);
         }
@@ -538,6 +735,9 @@
                     <td class="py-4 px-4 font-medium max-w-xs truncate">${q.title}</td>
                     <td class="py-4 px-4"><span class="text-xs text-gray-300 bg-anime-dark px-2.5 py-1 rounded-lg border border-anime-border">${typeText}</span></td>
                     <td class="py-4 px-4 text-right space-x-2">
+                        <button onclick="editQuestion('${q.id}')" class="px-3 py-1.5 rounded-lg bg-cyan-500/20 hover:bg-cyan-500 text-cyan-300 hover:text-white transition-all text-xs font-semibold">
+                            <i class="fa-solid fa-pen-to-square mr-1"></i>编辑
+                        </button>
                         <button onclick="deleteQuestion('${q.id}')" class="px-3 py-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500 text-rose-300 hover:text-white transition-all text-xs font-semibold">
                             <i class="fa-solid fa-trash mr-1"></i>删除
                         </button>
@@ -561,13 +761,12 @@
             }
         }
 
-        // Local Image Uploader Handler (converts to Base64)
         function handleImageUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
 
             if (file.size > 2 * 1024 * 1024) {
-                showCustomModal('文件过大', '请上传小于 2MB 的图片文件，以确保本地存储顺畅！', 'fa-triangle-exclamation');
+                showCustomModal('文件过大', '请上传小于 2MB 的图片文件！', 'fa-triangle-exclamation');
                 return;
             }
 
@@ -590,7 +789,7 @@
             const title = document.getElementById('cms-q-title').value.trim();
             const mediaUrl = document.getElementById('cms-q-media').value.trim();
             const analysis = document.getElementById('cms-q-analysis').value.trim();
-            const customTimer = parseInt(document.getElementById('cms-q-timer').value) || 15;
+            const customTimer = parseInt(document.getElementById('cms-q-timer').value) || 25;
 
             if (!title) {
                 showCustomModal('提示', '题目标题不能为空！', 'fa-triangle-exclamation');
@@ -621,35 +820,77 @@
                 answer = parseInt(document.getElementById('cms-correct-index').value);
             }
 
-            const newQ = {
-                id: 'q_' + Date.now(),
-                category,
-                type,
-                title,
-                mediaUrl,
-                options,
-                answer,
-                analysis: analysis || '暂无解析。',
-                timer: customTimer
-            };
+            if (editingQuestionId) {
+                const index = questions.findIndex(q => q.id === editingQuestionId);
+                if (index !== -1) {
+                    questions[index] = {
+                        id: editingQuestionId, category, type, title, mediaUrl, options, answer,
+                        analysis: analysis || '暂无解析。', timer: customTimer
+                    };
+                }
+                editingQuestionId = null;
+                document.getElementById('cms-form-submit-btn').innerHTML = '<i class="fa-solid fa-plus mr-1"></i>保存并添加题目到题库';
+            } else {
+                const newQ = {
+                    id: 'q_' + Date.now(),
+                    category, type, title, mediaUrl, options, answer,
+                    analysis: analysis || '暂无解析。', timer: customTimer
+                };
+                questions.push(newQ);
+            }
 
-            questions.push(newQ);
             saveData();
             renderCMSQuestionsTable();
-
-            // Reset form
             document.getElementById('cms-question-form').reset();
             document.getElementById('cms-image-preview').classList.add('hidden');
             handleQuestionTypeChange();
 
-            showCustomModal('添加成功', '新题目已成功保存到您的本地题库中！', 'fa-circle-check');
+            showCustomModal('保存成功', '题目已成功保存到本地题库中！', 'fa-circle-check');
+        }
+
+        function editQuestion(id) {
+            const q = questions.find(item => item.id === id);
+            if (!q) return;
+
+            editingQuestionId = q.id;
+            document.getElementById('cms-q-category').value = q.category;
+            document.getElementById('cms-q-type').value = q.type;
+            handleQuestionTypeChange();
+
+            document.getElementById('cms-q-timer').value = q.timer || 25;
+            document.getElementById('cms-q-title').value = q.title;
+            document.getElementById('cms-q-media').value = q.mediaUrl || '';
+            document.getElementById('cms-q-analysis').value = q.analysis || '';
+
+            if (q.mediaUrl) {
+                const previewImg = document.getElementById('cms-image-preview');
+                previewImg.src = q.mediaUrl;
+                previewImg.classList.remove('hidden');
+            } else {
+                document.getElementById('cms-image-preview').classList.add('hidden');
+            }
+
+            if (q.type === 'blank') {
+                document.getElementById('cms-blank-answer').value = q.answer;
+            } else {
+                if (q.options && q.options.length >= 4) {
+                    document.getElementById('cms-opt-0').value = q.options[0];
+                    document.getElementById('cms-opt-1').value = q.options[1];
+                    document.getElementById('cms-opt-2').value = q.options[2];
+                    document.getElementById('cms-opt-3').value = q.options[3];
+                }
+                document.getElementById('cms-correct-index').value = q.answer;
+            }
+
+            document.getElementById('cms-form-submit-btn').innerHTML = '<i class="fa-solid fa-pen-to-square mr-1"></i>保存修改';
+            document.getElementById('cms-question-form').scrollIntoView({ behavior: 'smooth' });
         }
 
         function deleteQuestion(id) {
             questions = questions.filter(q => q.id !== id);
             saveData();
             renderCMSQuestionsTable();
-            showCustomModal('已删除', '该题目已从本地题库中移除。', 'fa-trash');
+            showCustomModal('已删除', '题目已从本地题库中移除。', 'fa-trash');
         }
 
         function resetToDefaultData() {
@@ -688,6 +929,15 @@
         window.onload = function() {
             initData();
             renderHomeCategories();
+
+            const savedFb = localStorage.getItem('anime_fb_config');
+            if (savedFb) {
+                const config = JSON.parse(savedFb);
+                document.getElementById('fb-api-key').value = config.apiKey || '';
+                document.getElementById('fb-auth-domain').value = config.authDomain || '';
+                document.getElementById('fb-project-id').value = config.projectId || '';
+                initFirebaseClient(config.apiKey, config.authDomain, config.projectId);
+            }
         };
     </script>
 </head>
@@ -702,18 +952,29 @@
                 </div>
                 <div>
                     <h1 class="font-black text-lg sm:text-xl tracking-tight bg-gradient-to-r from-white via-cyan-200 to-fuchsia-400 bg-clip-text text-transparent">造梦星环二次元宇宙</h1>
-                    <p class="text-xs text-gray-400 font-mono">DREAM RING ANIME UNIVERSE v3.0</p>
+                    <p class="text-xs text-gray-400 font-mono">DREAM RING ANIME UNIVERSE v3.3 (SECURE)</p>
                 </div>
             </div>
 
-            <div class="flex items-center space-x-3">
-                <button onclick="switchView('home')" class="px-4 py-2 rounded-xl bg-anime-card hover:bg-anime-border border border-anime-border text-gray-300 hover:text-white text-sm font-semibold transition-all flex items-center space-x-2">
-                    <i class="fa-solid fa-house"></i>
-                    <span class="hidden sm:inline">首页大厅</span>
+            <div class="flex items-center space-x-2 sm:space-x-3">
+                <div id="cloud-status-badge" class="hidden sm:flex items-center text-xs font-mono px-3 py-1.5 rounded-full bg-anime-dark border border-anime-border text-gray-400">
+                    <span class="inline-block w-2 h-2 rounded-full bg-amber-400 mr-1"></span> 离线模式
+                </div>
+                <div id="current-user-badge" class="hidden md:flex items-center text-xs font-mono px-3 py-1.5 rounded-full bg-anime-dark border border-anime-border text-cyan-300">
+                    <i class="fa-solid fa-user-slash mr-1"></i> 未登录
+                </div>
+                <button onclick="switchView('leaderboard')" class="px-3.5 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500 text-amber-300 hover:text-white border border-amber-500/30 text-xs sm:text-sm font-bold transition-all flex items-center space-x-1.5">
+                    <i class="fa-solid fa-trophy"></i>
+                    <span class="hidden sm:inline">全球排行榜</span>
                 </button>
-                <button onclick="switchView('cms')" class="px-4 py-2 rounded-xl bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 text-white text-sm font-bold shadow-neon transition-all flex items-center space-x-2">
-                    <i class="fa-solid fa-gear"></i>
-                    <span>题库管理后台</span>
+                <button onclick="switchView('auth')" class="px-3.5 py-2 rounded-xl bg-cyan-500/20 hover:bg-cyan-500 text-cyan-300 hover:text-white border border-cyan-500/30 text-xs sm:text-sm font-bold transition-all flex items-center space-x-1.5">
+                    <i class="fa-solid fa-cloud"></i>
+                    <span class="hidden sm:inline">云端设置</span>
+                </button>
+                <!-- Protected CMS Button -->
+                <button onclick="requestCmsAccess()" class="px-3.5 py-2 rounded-xl bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 text-white text-xs sm:text-sm font-bold shadow-neon transition-all flex items-center space-x-1.5">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    <span class="hidden sm:inline">题库管理</span>
                 </button>
             </div>
         </div>
@@ -724,75 +985,67 @@
 
         <!-- ================= 1. HOME VIEW ================= -->
         <div id="view-home" class="space-y-10">
-            <!-- Hero Banner -->
             <div class="glass-panel p-8 sm:p-12 rounded-3xl border border-fuchsia-500/30 relative overflow-hidden shadow-2xl">
                 <div class="absolute -right-10 -top-10 w-64 h-64 bg-fuchsia-500/15 rounded-full blur-3xl pointer-events-none"></div>
                 <div class="absolute -left-10 -bottom-10 w-64 h-64 bg-cyan-500/15 rounded-full blur-3xl pointer-events-none"></div>
                 
                 <div class="relative z-10 max-w-2xl space-y-4">
                     <span class="px-3 py-1 rounded-full text-xs font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
-                        <i class="fa-solid fa-sparkles mr-1"></i> 造梦星环 · 多模态二次元知识挑战赛
+                        <i class="fa-solid fa-shield-halved mr-1"></i> 后台密码鉴权保护已启用
                     </span>
                     <h2 class="text-3xl sm:text-5xl font-black tracking-tight leading-tight">
                         开启你的 <span class="bg-gradient-to-r from-cyan-400 to-fuchsia-500 bg-clip-text text-transparent">造梦星环二次元宇宙</span> 探险
                     </h2>
-                    <p class="text-gray-300 text-sm sm:text-base leading-relaxed">
-                        支持选择题、填空题、音频及图像多模态题型。无需联网与域名，本地题库随心添加、无限畅玩！
+                    <p class="text-gray-300 text-sm leading-relaxed">
+                        访客可以通过 GitHub 链接直接畅玩所有答题专区与查看全球排行榜；而「题库管理」后台现已加入安全弹窗密码验证，防止未经授权的修改！
                     </p>
                     <div class="pt-4 flex flex-wrap gap-4">
                         <button onclick="startQuiz('all')" class="px-8 py-4 rounded-2xl bg-gradient-to-r from-fuchsia-600 to-cyan-500 hover:from-fuchsia-500 text-white font-bold shadow-neon transition-all flex items-center space-x-3 text-base">
                             <i class="fa-solid fa-play text-lg"></i>
                             <span>开始全站乱斗</span>
                         </button>
-                        <button onclick="switchView('cms')" class="px-6 py-4 rounded-2xl bg-anime-card hover:bg-anime-border border border-anime-border text-gray-200 font-semibold transition-all flex items-center space-x-2 text-base">
-                            <i class="fa-solid fa-plus-circle text-cyan-400"></i>
-                            <span>自定义添加题目</span>
+                        <button onclick="switchView('leaderboard')" class="px-6 py-4 rounded-2xl bg-anime-card hover:bg-anime-border border border-anime-border text-amber-300 font-semibold transition-all flex items-center space-x-2 text-base">
+                            <i class="fa-solid fa-trophy"></i>
+                            <span>查看全球排行榜</span>
                         </button>
                     </div>
                 </div>
             </div>
 
-            <!-- Categories Section -->
             <div class="space-y-6">
                 <div class="flex items-center justify-between">
                     <h3 class="text-xl font-black flex items-center space-x-2">
                         <i class="fa-solid fa-compass text-fuchsia-400 mr-2"></i>
-                        <span>选择动漫分类专区</span>
+                        <span>选择难度专区</span>
                     </h3>
                 </div>
 
-                <div id="categories-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <!-- Dynamically populated -->
-                </div>
+                <div id="categories-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
             </div>
         </div>
 
         <!-- ================= 2. QUIZ VIEW ================= -->
         <div id="view-quiz" class="hidden max-w-3xl mx-auto space-y-6">
-            <!-- Quiz Header & Timer -->
             <div class="glass-panel p-6 rounded-3xl border border-anime-border flex flex-col space-y-4">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-3">
-                        <span id="quiz-category-title" class="px-3 py-1 rounded-full text-xs font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">鬼灭之刃</span>
+                        <span id="quiz-category-title" class="px-3 py-1 rounded-full text-xs font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">专区</span>
                         <span id="quiz-progress-text" class="text-xs font-mono text-gray-400">第 1 / 5 题</span>
                     </div>
                     <div class="flex items-center space-x-2 bg-anime-dark px-3.5 py-1.5 rounded-full border border-anime-border text-fuchsia-400 font-mono text-sm font-bold">
                         <i class="fa-solid fa-stopwatch"></i>
-                        <span id="quiz-timer">15</span>s
+                        <span id="quiz-timer">20</span>s
                     </div>
                 </div>
 
-                <!-- Progress Bar -->
                 <div class="w-full bg-anime-dark h-2 rounded-full overflow-hidden border border-anime-border">
                     <div id="quiz-progress-bar" class="bg-gradient-to-r from-cyan-400 to-fuchsia-500 h-full w-0 transition-all duration-300"></div>
                 </div>
-                <!-- Timer Bar -->
                 <div class="w-full bg-anime-dark h-1 rounded-full overflow-hidden">
                     <div id="quiz-timer-bar" class="bg-fuchsia-500 h-full w-full transition-all duration-1000"></div>
                 </div>
             </div>
 
-            <!-- Question Card -->
             <div class="glass-panel p-8 sm:p-10 rounded-3xl border border-fuchsia-500/30 shadow-2xl space-y-6 relative">
                 <div class="flex items-center justify-between">
                     <span id="question-type-badge" class="px-3 py-1 rounded-lg text-xs font-bold bg-fuchsia-500/10 text-fuchsia-300 border border-fuchsia-500/20">
@@ -800,19 +1053,10 @@
                     </span>
                 </div>
 
-                <h3 id="question-title" class="text-xl sm:text-2xl font-bold leading-snug text-white">
-                    题目加载中...
-                </h3>
-
-                <!-- Media Container (Image/Audio/Video) -->
+                <h3 id="question-title" class="text-xl sm:text-2xl font-bold leading-snug text-white">题目加载中...</h3>
                 <div id="question-media-container" class="hidden"></div>
+                <div id="question-options-container" class="space-y-3 pt-2"></div>
 
-                <!-- Options or Input container -->
-                <div id="question-options-container" class="space-y-3 pt-2">
-                    <!-- Dynamically populated -->
-                </div>
-
-                <!-- Feedback & Analysis Box -->
                 <div id="quiz-analysis-box" class="hidden pt-4 border-t border-anime-border space-y-4">
                     <div id="analysis-status" class="p-4 rounded-2xl font-bold"></div>
                     <div class="p-4 rounded-2xl bg-anime-dark border border-anime-border space-y-2">
@@ -831,7 +1075,7 @@
         <div id="view-result" class="hidden max-w-2xl mx-auto space-y-6 text-center">
             <div id="result-share-card" class="glass-panel p-8 sm:p-12 rounded-3xl space-y-6 border border-fuchsia-500/30 shadow-2xl relative overflow-hidden">
                 <div class="absolute top-4 right-4 text-xs font-mono text-fuchsia-400 bg-fuchsia-500/10 px-3 py-1 rounded-full border border-fuchsia-500/20">
-                    Dream Ring Anime Universe 🏆
+                    Cloud Leaderboard Synced ☁️🏆
                 </div>
 
                 <div class="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-tr from-fuchsia-600 to-cyan-400 flex items-center justify-center shadow-neon animate-float">
@@ -839,9 +1083,9 @@
                 </div>
 
                 <div class="space-y-2">
-                    <span class="px-3 py-1 rounded-full text-xs font-bold bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/30">挑战成功</span>
+                    <span class="px-3 py-1 rounded-full text-xs font-bold bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/30">挑战成功 & 已同步云端</span>
                     <h3 class="text-3xl font-black mt-2">恭喜完成挑战！</h3>
-                    <p id="result-comment" class="text-gray-300 text-sm">表现优秀！</p>
+                    <p id="result-comment" class="text-gray-300 text-sm">战绩已成功写入全球排行榜！</p>
                 </div>
 
                 <div class="grid grid-cols-3 gap-4 py-4">
@@ -858,17 +1102,16 @@
                         <p id="result-accuracy" class="text-2xl font-black text-amber-400 mt-1">100%</p>
                     </div>
                 </div>
-
-                <div class="pt-2 text-xs text-gray-400">
-                    完全离线本地运行，随时随地测试你的动漫知识库！
-                </div>
             </div>
 
-            <!-- Action Buttons -->
             <div class="flex flex-wrap justify-center gap-4 pt-2">
+                <button onclick="switchView('leaderboard')" class="px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 text-white font-bold shadow-neon transition-all flex items-center space-x-2">
+                    <i class="fa-solid fa-trophy"></i>
+                    <span>查看全球排行榜</span>
+                </button>
                 <button onclick="shareScoreCard()" class="px-6 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 text-white font-bold shadow-neon-cyan transition-all flex items-center space-x-2">
                     <i class="fa-solid fa-share-nodes"></i>
-                    <span>复制战绩与分享链接</span>
+                    <span>复制战绩与分享</span>
                 </button>
                 <button onclick="restartCurrentQuiz()" class="px-6 py-3 rounded-xl bg-gradient-to-r from-fuchsia-600 to-pink-600 hover:from-fuchsia-500 text-white font-bold shadow-neon transition-all flex items-center space-x-2">
                     <i class="fa-solid fa-rotate-right"></i>
@@ -881,16 +1124,86 @@
             </div>
         </div>
 
-        <!-- ================= 4. CMS VIEW ================= -->
+        <!-- ================= 4. LEADERBOARD VIEW ================= -->
+        <div id="view-leaderboard" class="hidden max-w-4xl mx-auto space-y-8">
+            <div class="glass-panel p-8 rounded-3xl border border-amber-500/30 space-y-6">
+                <div class="flex items-center justify-between border-b border-anime-border pb-6">
+                    <div>
+                        <h3 class="text-2xl font-black flex items-center space-x-3 text-amber-400">
+                            <i class="fa-solid fa-trophy"></i>
+                            <span>全球巅峰排行榜 (Cloud Leaderboard)</span>
+                        </h3>
+                        <p class="text-gray-400 text-sm mt-1">汇聚全球二次元挑战者的巅峰战绩，实时排行前 100 名神级宅神。</p>
+                    </div>
+                    <button onclick="fetchAndRenderLeaderboard()" class="px-4 py-2.5 rounded-xl bg-amber-500/20 hover:bg-amber-500 text-amber-300 hover:text-white border border-amber-500/30 transition-all text-xs font-bold flex items-center space-x-2">
+                        <i class="fa-solid fa-rotate-right"></i>
+                        <span>刷新排行榜</span>
+                    </button>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b border-anime-border text-xs text-gray-400 uppercase tracking-wider">
+                                <th class="py-3 px-4">排名</th>
+                                <th class="py-3 px-4">挑战者昵称</th>
+                                <th class="py-3 px-4">积分</th>
+                                <th class="py-3 px-4">正确率 / 专区</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboard-tbody">
+                            <tr>
+                                <td colspan="4" class="text-center py-8 text-gray-400">正在加载排行榜...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= 5. AUTH / CLOUD CONFIG VIEW ================= -->
+        <div id="view-auth" class="hidden max-w-xl mx-auto space-y-8">
+            <div class="glass-panel p-8 rounded-3xl border border-cyan-500/30 space-y-6">
+                <div class="border-b border-anime-border pb-4">
+                    <h3 class="text-2xl font-black flex items-center space-x-3 text-cyan-400">
+                        <i class="fa-solid fa-cloud"></i>
+                        <span>Firebase 云端与认证设置</span>
+                    </h3>
+                    <p class="text-gray-400 text-sm mt-1">接入您自己的 Firebase 项目以启用云端排行榜与匿名自动登录功能。</p>
+                </div>
+
+                <form onsubmit="handleFirebaseConfigSubmit(event)" class="space-y-4">
+                    <div class="space-y-2">
+                        <label class="text-xs font-semibold text-gray-300">Firebase API Key</label>
+                        <input type="text" id="fb-api-key" placeholder="例如：AIzaSy..." class="w-full px-4 py-3 rounded-xl bg-anime-dark border border-anime-border text-white focus:outline-none focus:border-cyan-400 font-mono text-sm">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-xs font-semibold text-gray-300">Auth Domain</label>
+                        <input type="text" id="fb-auth-domain" placeholder="例如：your-app.firebaseapp.com" class="w-full px-4 py-3 rounded-xl bg-anime-dark border border-anime-border text-white focus:outline-none focus:border-cyan-400 font-mono text-sm">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-xs font-semibold text-gray-300">Project ID</label>
+                        <input type="text" id="fb-project-id" placeholder="例如：your-app-id" class="w-full px-4 py-3 rounded-xl bg-anime-dark border border-anime-border text-white focus:outline-none focus:border-cyan-400 font-mono text-sm">
+                    </div>
+
+                    <button type="submit" class="w-full py-4 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 text-white font-bold shadow-neon-cyan transition-all flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-check mr-1"></i>
+                        <span>保存配置并连接云端</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- ================= 6. CMS VIEW (PROTECTED) ================= -->
         <div id="view-cms" class="hidden max-w-4xl mx-auto space-y-8">
             <div class="glass-panel p-8 rounded-3xl border border-fuchsia-500/30 space-y-6">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-anime-border pb-6">
                     <div>
                         <h3 class="text-2xl font-black flex items-center space-x-3">
                             <i class="fa-solid fa-database text-fuchsia-400"></i>
-                            <span>本地题库管理系统 (CMS)</span>
+                            <span>本地题库管理系统 (CMS - 已授权)</span>
                         </h3>
-                        <p class="text-gray-400 text-sm mt-1">在这里添加或删除多模态题目，所有数据自动保存在您的本地浏览器中。</p>
+                        <p class="text-gray-400 text-sm mt-1">管理员已验证通过，您可以安全地添加、编辑或删除多模态题目。</p>
                     </div>
                     <button onclick="resetToDefaultData()" class="px-4 py-2.5 rounded-xl bg-rose-500/20 hover:bg-rose-500 text-rose-300 hover:text-white border border-rose-500/30 transition-all text-xs font-bold flex items-center space-x-2">
                         <i class="fa-solid fa-rotate-right"></i>
@@ -898,11 +1211,10 @@
                     </button>
                 </div>
 
-                <!-- Add Question Form -->
                 <form id="cms-question-form" onsubmit="addNewQuestionFromCMS(event)" class="space-y-6">
-                    <h4 class="text-lg font-bold text-cyan-400 flex items-center space-x-2">
+                    <h4 id="cms-form-title" class="text-lg font-bold text-cyan-400 flex items-center space-x-2">
                         <i class="fa-solid fa-plus-circle"></i>
-                        <span>添加新题目（支持选择/填空/图片上传/自定义答题时间）</span>
+                        <span>添加新题目（支持选择/填空/图片上传/自定义时间）</span>
                     </h4>
 
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -927,12 +1239,11 @@
 
                     <div class="space-y-2">
                         <label class="text-xs font-semibold text-gray-300">题目标题 / 问题描述</label>
-                        <textarea id="cms-q-title" rows="2" placeholder="例如：主角灶门炭治郎最初掌握的呼吸流派是？" class="w-full px-4 py-3 rounded-xl bg-anime-dark border border-anime-border text-white focus:outline-none focus:border-cyan-400" required></textarea>
+                        <textarea id="cms-q-title" rows="2" placeholder="输入问题..." class="w-full px-4 py-3 rounded-xl bg-anime-dark border border-anime-border text-white focus:outline-none focus:border-cyan-400" required></textarea>
                     </div>
 
-                    <!-- Local Image Upload & Media URL -->
                     <div class="space-y-2">
-                        <label class="text-xs font-semibold text-gray-300">媒体资源 (可填图片/视频/音频链接，或直接上传本地图片)</label>
+                        <label class="text-xs font-semibold text-gray-300">媒体资源链接或本地上传</label>
                         <div class="flex gap-4 items-center">
                             <input type="text" id="cms-q-media" placeholder="https://... 或点击右侧上传本地图片" class="w-full px-4 py-3 rounded-xl bg-anime-dark border border-anime-border text-white focus:outline-none focus:border-cyan-400 text-sm">
                             <label class="px-5 py-3 rounded-xl bg-anime-border hover:bg-cyan-500/20 hover:text-cyan-400 text-gray-200 text-xs font-bold cursor-pointer transition-all shrink-0 border border-anime-border flex items-center space-x-2">
@@ -941,13 +1252,11 @@
                                 <input type="file" accept="image/*" onchange="handleImageUpload(event)" class="hidden">
                             </label>
                         </div>
-                        <!-- Preview Image -->
                         <div class="pt-2">
                             <img id="cms-image-preview" src="" alt="预览图" class="hidden h-32 rounded-xl object-cover border border-anime-border">
                         </div>
                     </div>
 
-                    <!-- Choice Options Box -->
                     <div id="cms-choice-options-box" class="space-y-4 pt-2">
                         <label class="text-xs font-semibold text-cyan-400 uppercase tracking-wider">选择题 4 个选项与正确答案</label>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -967,24 +1276,22 @@
                         </div>
                     </div>
 
-                    <!-- Blank Answer Box -->
                     <div id="cms-blank-answer-box" class="hidden space-y-2 pt-2">
                         <label class="text-xs font-semibold text-cyan-400 uppercase tracking-wider">填空题标准答案</label>
-                        <input type="text" id="cms-blank-answer" placeholder="请输入填空题的标准答案（例如：彼岸花）" class="w-full px-4 py-3 rounded-xl bg-anime-dark border border-anime-border text-white focus:outline-none focus:border-cyan-400">
+                        <input type="text" id="cms-blank-answer" placeholder="请输入填空题标准答案" class="w-full px-4 py-3 rounded-xl bg-anime-dark border border-anime-border text-white focus:outline-none focus:border-cyan-400">
                     </div>
 
                     <div class="space-y-2">
                         <label class="text-xs font-semibold text-gray-300">答题解析说明</label>
-                        <textarea id="cms-q-analysis" rows="2" placeholder="输入答题后的剧情解析说明..." class="w-full px-4 py-3 rounded-xl bg-anime-dark border border-anime-border text-white focus:outline-none focus:border-cyan-400"></textarea>
+                        <textarea id="cms-q-analysis" rows="2" placeholder="输入剧情解析..." class="w-full px-4 py-3 rounded-xl bg-anime-dark border border-anime-border text-white focus:outline-none focus:border-cyan-400"></textarea>
                     </div>
 
-                    <button type="submit" class="w-full py-4 rounded-2xl bg-gradient-to-r from-fuchsia-600 to-cyan-500 hover:from-fuchsia-500 text-white font-bold shadow-neon transition-all flex items-center justify-center space-x-2">
+                    <button type="submit" id="cms-form-submit-btn" class="w-full py-4 rounded-2xl bg-gradient-to-r from-fuchsia-600 to-cyan-500 hover:from-fuchsia-500 text-white font-bold shadow-neon transition-all flex items-center justify-center space-x-2">
                         <i class="fa-solid fa-plus"></i>
                         <span>保存并添加题目到题库</span>
                     </button>
                 </form>
 
-                <!-- Questions List Table -->
                 <div class="space-y-4 pt-6 border-t border-anime-border">
                     <h4 class="text-lg font-bold text-white flex items-center space-x-2">
                         <i class="fa-solid fa-list-check text-cyan-400"></i>
@@ -1001,9 +1308,7 @@
                                     <th class="py-3 px-4 text-right">操作</th>
                                 </tr>
                             </thead>
-                            <tbody id="cms-questions-tbody">
-                                <!-- Populated dynamically -->
-                            </tbody>
+                            <tbody id="cms-questions-tbody"></tbody>
                         </table>
                     </div>
                 </div>
@@ -1012,9 +1317,8 @@
 
     </main>
 
-    <!-- Footer -->
     <footer class="border-t border-anime-border/60 bg-anime-card/30 mt-12 py-6 text-center text-xs text-gray-400 font-mono">
-        <p>Dream Ring Anime Universe © 2026 - Pure Local Web Application</p>
+        <p>Dream Ring Anime Universe © 2026 - Secure Admin & Cloud Leaderboard</p>
     </footer>
 
 </body>
