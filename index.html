@@ -56,94 +56,101 @@
         // ================= GLOBAL STATE & DATA =================
         const DEFAULT_CATEGORIES = [
             {
-                id: 'kimetsu',
-                name: '鬼灭之刃',
-                desc: '呼吸法、鬼杀队与十二鬼月之战',
-                icon: 'fa-fire',
-                gradient: 'from-amber-500 to-red-600'
+                id: 'novice',
+                name: '萌新村·初窥门径',
+                desc: '路人皆知的人气名作与破圈神番，轻松开启二次元冒险',
+                icon: 'fa-seedling',
+                gradient: 'from-emerald-500 to-teal-600'
             },
             {
-                id: 'jujutsu',
-                name: '咒术回战',
-                desc: '咒力、术式与特级咒灵的巅峰对决',
-                icon: 'fa-bolt',
-                gradient: 'from-purple-600 to-indigo-600'
+                id: 'intermediate',
+                name: '资深骨灰·进阶长廊',
+                desc: '黄金时代经典神作与人气佳作，考验你对番剧细节的深度记忆',
+                icon: 'fa-compass',
+                gradient: 'from-blue-500 to-indigo-600'
             },
             {
-                id: 'attack',
-                name: '进击的巨人',
-                desc: '墙内外的真相与自由之翼的抉择',
-                icon: 'fa-shield-halved',
-                gradient: 'from-emerald-600 to-teal-800'
+                id: 'master',
+                name: '殿堂级·硬核漫迷',
+                desc: '剧情考究、名场面频出的资深必看佳作，挑战深度脑洞',
+                icon: 'fa-fire-flame-curved',
+                gradient: 'from-amber-500 to-orange-600'
             },
             {
-                id: 'naruto',
-                name: '火影忍者',
-                desc: '忍道、羁绊与忍界大战的史诗',
-                icon: 'fa-sun',
-                gradient: 'from-orange-500 to-yellow-500'
+                id: 'hardcore',
+                name: '究极肝帝·考据学者',
+                desc: '细思极恐的官方设定、声优梗与隐藏彩蛋，硬核老二次元专属',
+                icon: 'fa-crown',
+                gradient: 'from-purple-600 to-fuchsia-600'
+            },
+            {
+                id: 'legend',
+                name: '次元之神·神级乱斗',
+                desc: '跨越年代与流派的究极盲盒，全方位考验你的全能宅神段位',
+                icon: 'fa-meteor',
+                gradient: 'from-cyan-500 to-blue-600'
             }
         ];
 
         const DEFAULT_QUESTIONS = [
-            // 鬼灭之刃 - 选择题
+            // 萌新村 - 选择题
             {
                 id: 'q1',
-                category: 'kimetsu',
+                category: 'novice',
                 type: 'choice',
-                title: '主角灶门炭治郎最初掌握的呼吸流派是？',
+                title: '在《鬼灭之刃》中，主角灶门炭治郎额头上的斑纹最初是如何形成的？',
                 mediaUrl: '',
-                options: ['雷之呼吸', '水之呼吸', '炎之呼吸', '兽之呼吸'],
+                options: ['与生俱来的胎记', '被鬼袭击留下的伤疤', '修炼水之呼吸烫伤的', '继承自父亲的日轮耳饰力量'],
                 answer: 1,
-                analysis: '炭治郎最初跟随前水柱鳞泷左近次学习，掌握了基础的水之呼吸，后来结合日之呼吸（火之神神乐）。',
+                analysis: '炭治郎最初额头左侧的伤疤是在小时候为了保护弟弟被滚烫的水壶烫伤的，后来在战斗中演变成真正的斑纹。',
                 timer: 15
             },
-            // 鬼灭之刃 - 填空题
+            // 萌新村 - 填空题
             {
                 id: 'q2',
-                category: 'kimetsu',
+                category: 'novice',
                 type: 'blank',
-                title: '鬼灭之刃中，鬼舞辻无惨最害怕的太阳花或是具有克制作用的蓝色花朵名称是？（请输入三个字）',
+                title: '《火影忍者》中，主角漩涡鸣人最标志性的梦想是成为村里的火______。（请输入两个字）',
                 mediaUrl: '',
                 options: [],
-                answer: '彼岸花',
-                analysis: '无惨穷极一生寻找的能让自己克服阳光的究极植物是“青色彼岸花”。',
+                answer: '影',
+                analysis: '“我要成为火影！”是贯穿整部《火影忍者》的核心热血信念。',
                 timer: 20
             },
-            // 咒术回战 - 视频/图片鉴赏题
+            // 殿堂级 - 图像鉴赏题
             {
                 id: 'q3',
-                category: 'jujutsu',
+                category: 'master',
                 type: 'choice',
-                title: '在《咒术回战》中，拥有“术式顺转·苍”、“术式反转·赫”以及虚式“茈”的最强咒术师是？',
-                mediaUrl: 'https://placehold.co/600x350/181b33/00f0ff?text=Jujutsu+Kaisen+Quiz',
+                title: '在《咒术回战》中，拥有“术式顺转·苍”、“术式反转·赫”的最强咒术师是？',
+                mediaUrl: 'https://placehold.co/600x350/181b33/00f0ff?text=Jujutsu+Kaisen+Master',
                 options: ['虎杖悠仁', '伏黑惠', '五条悟', '两面宿傩'],
                 answer: 2,
-                analysis: '五条悟拥有“无下限术式”，其代表招式包括苍、赫以及威力恐怖的虚式「茈」。',
+                analysis: '五条悟拥有无下限术式，其标志性的反转与顺转合击能释放出恐怖的虚式「茈」。',
                 timer: 15
             },
-            // 进击的巨人 - 填空题
+            // 殿堂级 - 填空题
             {
                 id: 'q4',
-                category: 'attack',
+                category: 'master',
                 type: 'blank',
-                title: '调查兵团团长埃尔文·史密斯在冲锋时喊出的标志性口号是什么？（提示四个字：献出____）',
+                title: '《进击的巨人》中，调查兵团团长埃尔文·史密斯在冲锋时喊出的标志性口号是“献出____”？（请输入两个字）',
                 mediaUrl: '',
                 options: [],
                 answer: '心脏',
                 analysis: '“献出心脏！”（Shinzou wo Sasageyo!）是调查兵团最为震撼的信仰与口号。',
                 timer: 20
             },
-            // 火影忍者 - 音频/趣味题
+            // 究极肝帝 - 选择题
             {
                 id: 'q5',
-                category: 'naruto',
+                category: 'hardcore',
                 type: 'choice',
-                title: '漩涡鸣人的招牌忍术，由多重影分身配合查克拉形态变化而成的S级忍术是？',
+                title: '下列哪一部经典动漫作品不是由ufotable（飞碟社）制作动画的？',
                 mediaUrl: '',
-                options: ['螺旋丸', '千鸟', '螺旋手里剑', '大玉螺旋丸'],
+                options: ['《鬼灭之刃》', '《Fate/Zero》', '《进击的巨人》', '《空之境界》'],
                 answer: 2,
-                analysis: '风遁·螺旋手里剑是鸣人结合风属性查克拉创造出的具有毁灭性细胞破坏力的S级忍术。',
+                analysis: '《进击的巨人》前三季由WIT STUDIO（霸权社）制作，第四季由MAPPA制作，而飞碟社代表作有鬼灭、Fate系列与空之境界。',
                 timer: 15
             }
         ];
