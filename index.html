@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>造梦星环二次元宇宙 - 究极二次元知识挑战赛 (密码保护版)</title>
+    <title>DREAM MAKE UNIVERSE - 究极二次元街机知识挑战赛</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -12,27 +12,36 @@
             theme: {
                 extend: {
                     colors: {
-                        anime: {
-                            dark: '#0f1020',
-                            card: '#181b33',
-                            border: '#2e335a',
-                            pink: '#ff2a8d',
-                            cyan: '#00f0ff',
-                            purple: '#9d4edd'
+                        arcade: {
+                            bg: '#05050a',
+                            panel: '#0f0e17',
+                            border: '#ff0055',
+                            neonGreen: '#00ff66',
+                            neonYellow: '#ffea00',
+                            neonCyan: '#00f0ff',
+                            neonPink: '#ff007f'
                         }
                     },
                     boxShadow: {
-                        'neon': '0 0 20px rgba(255, 42, 141, 0.4)',
-                        'neon-cyan': '0 0 20px rgba(0, 240, 255, 0.4)',
+                        'pixel': '4px 4px 0px #ff0055',
+                        'pixel-cyan': '4px 4px 0px #00f0ff',
+                        'pixel-yellow': '4px 4px 0px #ffea00',
+                        'arcade-glow': '0 0 15px rgba(255, 0, 85, 0.6)',
+                        'arcade-glow-cyan': '0 0 15px rgba(0, 240, 255, 0.6)'
                     },
                     animation: {
-                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                        'float': 'float 4s ease-in-out infinite',
+                        'blink': 'blink 1s steps(2, start) infinite',
+                        'flicker': 'flicker 0.15s infinite'
                     },
                     keyframes: {
-                        float: {
-                            '0%, 100%': { transform: 'translateY(0)' },
-                            '50%': { transform: 'translateY(-8px)' },
+                        blink: {
+                            '0%, 100%': { opacity: '1' },
+                            '50%': { opacity: '0' }
+                        },
+                        flicker: {
+                            '0%': { opacity: '0.97' },
+                            '50%': { opacity: '1' },
+                            '100%': { opacity: '0.98' }
                         }
                     }
                 }
@@ -41,15 +50,54 @@
     </script>
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+    <!-- Google Fonts: Press Start 2P & VT323 for Retro Arcade Feel -->
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #0f1020; color: #f3f4f6; }
-        .glass-panel { background: rgba(24, 27, 51, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #0f1020; }
-        ::-webkit-scrollbar-thumb { background: #2e335a; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #9d4edd; }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #05050a; 
+            color: #f3f4f6; 
+            image-rendering: pixelated;
+        }
+        .arcade-font {
+            font-family: 'VT323', monospace;
+            letter-spacing: 1px;
+        }
+        .pixel-title {
+            font-family: 'Press Start 2P', monospace;
+        }
+        /* CRT Scanlines Overlay */
+        .crt::before {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 99999;
+            background-size: 100% 4px, 6px 100%;
+            pointer-events: none;
+        }
+        .arcade-panel {
+            background: #0f0e17;
+            border: 3px solid #ff0055;
+            box-shadow: 6px 6px 0px #00f0ff;
+        }
+        .arcade-btn {
+            border: 2px solid #ffea00;
+            box-shadow: 4px 4px 0px #ff0055;
+            transition: all 0.1s ease;
+        }
+        .arcade-btn:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0px #00f0ff;
+        }
+        .arcade-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0px #ff0055;
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #05050a; }
+        ::-webkit-scrollbar-thumb { background: #ff0055; }
     </style>
 
     <!-- Firebase SDKs -->
@@ -69,38 +117,38 @@
         const DEFAULT_CATEGORIES = [
             {
                 id: 'novice',
-                name: '萌新村·初窥门径',
+                name: 'STAGE 1: 萌新村·初窥门径',
                 desc: '路人皆知的人气名作与破圈神番，轻松开启二次元冒险',
                 icon: 'fa-seedling',
-                gradient: 'from-emerald-500 to-teal-600'
+                color: 'text-emerald-400'
             },
             {
                 id: 'intermediate',
-                name: '资深骨灰·进阶长廊',
+                name: 'STAGE 2: 资深骨灰·进阶长廊',
                 desc: '黄金时代经典神作与人气佳作，考验你对番剧细节的深度记忆',
                 icon: 'fa-compass',
-                gradient: 'from-blue-500 to-indigo-600'
+                color: 'text-blue-400'
             },
             {
                 id: 'master',
-                name: '殿堂级·硬核漫迷',
+                name: 'STAGE 3: 殿堂级·硬核漫迷',
                 desc: '剧情考究、名场面频出的资深必看佳作，挑战深度脑洞',
                 icon: 'fa-fire-flame-curved',
-                gradient: 'from-amber-500 to-orange-600'
+                color: 'text-amber-400'
             },
             {
                 id: 'hardcore',
-                name: '究极肝帝·考据学者',
+                name: 'STAGE 4: 究极肝帝·考据学者',
                 desc: '细思极恐的官方设定、声优梗与隐藏彩蛋，硬核老二次元专属',
                 icon: 'fa-crown',
-                gradient: 'from-purple-600 to-fuchsia-600'
+                color: 'text-fuchsia-400'
             },
             {
                 id: 'legend',
-                name: '次元之神·神级乱斗',
+                name: 'FINAL STAGE: 次元之神·神级乱斗',
                 desc: '跨越年代与流派的究极盲盒，全方位考验你的全能宅神段位',
                 icon: 'fa-meteor',
-                gradient: 'from-cyan-500 to-blue-600'
+                color: 'text-cyan-400'
             }
         ];
 
@@ -132,7 +180,7 @@
                 category: 'master',
                 type: 'choice',
                 title: '在《咒术回战》中，拥有“术式顺转·苍”、“术式反转·赫”的最强咒术师是？',
-                mediaUrl: 'https://placehold.co/600x350/181b33/00f0ff?text=Jujutsu+Kaisen+Master',
+                mediaUrl: '',
                 options: ['虎杖悠仁', '伏黑惠', '五条悟', '两面宿傩'],
                 answer: 2,
                 analysis: '五条悟拥有无下限术式，其标志性的反转与顺转合击能释放出恐怖的虚式「茈」。',
@@ -171,28 +219,23 @@
         let correctCount = 0;
         let timer = null;
         let timeLeft = 20;
-        let editingQuestionId = null;
 
-        // Firebase Cloud & Auth State
         let db = null;
         let auth = null;
         let currentUser = null;
-        let firebaseAppInstance = null;
-
-        // CMS Admin Auth State (default password is 'dp123456')
         let isAdminAuthenticated = false;
 
         function initData() {
-            const savedCats = localStorage.getItem('anime_quiz_categories_v3');
-            const savedQs = localStorage.getItem('anime_quiz_questions_v3');
+            const savedCats = localStorage.getItem('arcade_categories_v1');
+            const savedQs = localStorage.getItem('arcade_questions_v1');
 
             categories = savedCats ? JSON.parse(savedCats) : DEFAULT_CATEGORIES;
             questions = savedQs ? JSON.parse(savedQs) : DEFAULT_QUESTIONS;
         }
 
         function saveData() {
-            localStorage.setItem('anime_quiz_categories_v3', JSON.stringify(categories));
-            localStorage.setItem('anime_quiz_questions_v3', JSON.stringify(questions));
+            localStorage.setItem('arcade_categories_v1', JSON.stringify(categories));
+            localStorage.setItem('arcade_questions_v1', JSON.stringify(questions));
         }
 
         // ================= NAVIGATION & CMS PROTECTION =================
@@ -209,27 +252,25 @@
             if (!modal) {
                 modal = document.createElement('div');
                 modal.id = 'password-modal';
-                modal.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4';
+                modal.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4';
                 document.body.appendChild(modal);
             }
 
             modal.innerHTML = `
-                <div class="glass-panel p-8 rounded-3xl max-w-md w-full border border-fuchsia-500/40 shadow-2xl space-y-5 animate-float">
-                    <div class="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-tr from-fuchsia-600 to-cyan-400 flex items-center justify-center text-white text-2xl shadow-neon">
-                        <i class="fa-solid fa-shield-halved"></i>
+                <div class="arcade-panel p-6 sm:p-8 rounded-none max-w-md w-full space-y-5 animate-pulse">
+                    <div class="text-center space-y-2">
+                        <div class="text-3xl text-arcade-border pixel-title mb-2"><i class="fa-solid fa-lock"></i></div>
+                        <h3 class="text-xl pixel-title text-yellow-300">ADMIN ACCESS</h3>
+                        <p class="text-gray-300 arcade-font text-lg">请输入管理员街机密码 (默认: <span class="text-cyan-400">dp123456</span>)</p>
                     </div>
-                    <div class="text-center space-y-1">
-                        <h3 class="text-xl font-black text-white">管理员权限验证</h3>
-                        <p class="text-gray-300 text-xs">访客模式无法直接修改题库。请输入管理员密码以进入 CMS 后台（默认密码: <span class="text-cyan-400 font-mono">dp123456</span>）。</p>
-                    </div>
-                    <div class="space-y-3">
-                        <input type="password" id="admin-password-input" placeholder="请输入管理员密码..." class="w-full px-4 py-3.5 rounded-xl bg-anime-dark border border-anime-border text-white focus:outline-none focus:border-cyan-400 font-mono text-sm shadow-inner" onkeydown="if(event.key==='Enter') verifyAdminPassword()">
+                    <div class="space-y-4">
+                        <input type="password" id="admin-password-input" placeholder="ENTER PASSWORD..." class="w-full px-4 py-3 bg-black border-2 border-cyan-400 text-yellow-300 focus:outline-none focus:border-pink-500 font-mono text-center text-xl tracking-widest" onkeydown="if(event.key==='Enter') verifyAdminPassword()">
                         <div class="flex gap-3">
-                            <button onclick="document.getElementById('password-modal').remove()" class="w-1/2 py-3 rounded-xl bg-anime-dark hover:bg-anime-border border border-anime-border text-gray-300 font-semibold text-xs transition-all">
-                                取消返回
+                            <button onclick="document.getElementById('password-modal').remove()" class="w-1/2 py-3 arcade-btn bg-gray-800 text-gray-300 font-bold uppercase text-sm">
+                                CANCEL
                             </button>
-                            <button onclick="verifyAdminPassword()" class="w-1/2 py-3 rounded-xl bg-gradient-to-r from-fuchsia-600 to-cyan-500 hover:from-fuchsia-500 text-white font-bold text-xs shadow-neon transition-all">
-                                验证并进入
+                            <button onclick="verifyAdminPassword()" class="w-1/2 py-3 arcade-btn bg-pink-600 text-white font-bold uppercase text-sm">
+                                ENTER
                             </button>
                         </div>
                     </div>
@@ -243,16 +284,15 @@
 
         function verifyAdminPassword() {
             const inputVal = document.getElementById('admin-password-input').value.trim();
-            const correctPassword = localStorage.getItem('anime_admin_pwd') || 'dp123456';
+            const correctPassword = localStorage.getItem('arcade_admin_pwd') || 'dp123456';
 
             if (inputVal === correctPassword) {
                 isAdminAuthenticated = true;
                 const modal = document.getElementById('password-modal');
                 if (modal) modal.remove();
-                showCustomModal('验证成功', '欢迎进入题库管理后台！', 'fa-circle-check');
                 switchView('cms');
             } else {
-                showCustomModal('密码错误', '密码不正确，拒绝访问管理后台！', 'fa-triangle-exclamation');
+                alert('ACCESS DENIED: 密码错误！');
             }
         }
 
@@ -268,7 +308,6 @@
             if (viewName === 'home') {
                 renderHomeCategories();
             } else if (viewName === 'cms') {
-                renderCMSCategoriesList();
                 renderCMSQuestionsTable();
             } else if (viewName === 'leaderboard') {
                 fetchAndRenderLeaderboard();
@@ -276,7 +315,7 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // ================= FIREBASE CLOUD SETUP & AUTH =================
+        // ================= FIREBASE CLOUD & AUTH =================
         function initFirebaseClient(apiKey, authDomain, projectId) {
             try {
                 const { initializeApp, getAuth, getFirestore, onAuthStateChanged, signInAnonymously } = window.firebaseModules;
@@ -292,12 +331,10 @@
                 });
 
                 signInAnonymously(auth).catch(err => console.log("Anonymous auth fallback:", err));
-                
-                document.getElementById('cloud-status-badge').innerHTML = `<span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse mr-1"></span> 云端已连接`;
-                showCustomModal('云端连接成功', '已成功连接至 Firebase 云端数据库与排行榜服务！', 'fa-cloud');
+                document.getElementById('cloud-status-badge').innerHTML = `<span class="inline-block w-2.5 h-2.5 rounded-full bg-green-400 animate-blink mr-1"></span> CLOUD ONLINE`;
             } catch (e) {
                 console.error("Firebase init error:", e);
-                showCustomModal('连接提示', '使用离线默认模式。当前已启用本地存储与本地排行榜存档。', 'fa-triangle-exclamation');
+                alert("云端连接初始化出错，已切换至本地存档模式。");
             }
         }
 
@@ -308,11 +345,11 @@
             const projectId = document.getElementById('fb-project-id').value.trim();
 
             if (!apiKey || !projectId) {
-                showCustomModal('提示', '请填写完整的 Firebase API Key 和 Project ID！', 'fa-triangle-exclamation');
+                alert('请完整填写 API Key 和 Project ID！');
                 return;
             }
 
-            localStorage.setItem('anime_fb_config', JSON.stringify({ apiKey, authDomain, projectId }));
+            localStorage.setItem('arcade_fb_config', JSON.stringify({ apiKey, authDomain, projectId }));
             initFirebaseClient(apiKey, authDomain, projectId);
             switchView('home');
         }
@@ -320,26 +357,19 @@
         function updateAuthUI() {
             const userBadge = document.getElementById('current-user-badge');
             if (!userBadge) return;
-
             if (currentUser) {
-                const name = currentUser.displayName || (currentUser.isAnonymous ? `匿名宅神_${currentUser.uid.slice(0,4)}` : currentUser.email);
-                userBadge.innerHTML = `<i class="fa-solid fa-user-astronaut text-cyan-400 mr-1"></i> ${name}`;
+                userBadge.innerHTML = `<i class="fa-solid fa-gamepad text-cyan-400 mr-1"></i> PLAYER_${currentUser.uid.slice(0,4).toUpperCase()}`;
             } else {
-                userBadge.innerHTML = `<i class="fa-solid fa-user-slash text-gray-400 mr-1"></i> 未登录`;
+                userBadge.innerHTML = `<i class="fa-solid fa-user-slash text-gray-500 mr-1"></i> GUEST`;
             }
         }
 
         async function submitScoreToCloud(scoreVal, accuracyVal, catName) {
-            if (!db || !auth) {
-                console.log("Offline mode: score saved locally.");
-                return;
-            }
-
+            if (!db || !auth) return;
             try {
                 const { collection, addDoc } = window.firebaseModules;
-                const nickname = currentUser && currentUser.displayName ? currentUser.displayName : (currentUser ? `星环宅神_${currentUser.uid.slice(0,4)}` : '神秘路人');
-                
-                await addDoc(collection(db, "artifacts", "anime_quiz_universe_v3", "public", "data", "leaderboard"), {
+                const nickname = currentUser ? `PLAYER_${currentUser.uid.slice(0,4).toUpperCase()}` : 'GUEST';
+                await addDoc(collection(db, "artifacts", "arcade_quiz_v1", "public", "data", "leaderboard"), {
                     userId: currentUser ? currentUser.uid : 'guest_' + Math.random(),
                     nickname: nickname,
                     score: scoreVal,
@@ -347,67 +377,56 @@
                     category: catName,
                     createdAt: new Date().toISOString()
                 });
-                console.log("战绩已成功上传至云端全球排行榜！");
             } catch (e) {
-                console.error("上传云端排行榜失败:", e);
+                console.error("Score upload error:", e);
             }
         }
 
         async function fetchAndRenderLeaderboard() {
             const tbody = document.getElementById('leaderboard-tbody');
             if (!tbody) return;
-
-            tbody.innerHTML = `<tr><td colspan="4" class="text-center py-8 text-gray-400"><i class="fa-solid fa-spinner fa-spin mr-2"></i> 正在加载全球排行榜数据...</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="4" class="text-center py-8 text-cyan-400 arcade-font text-xl"><i class="fa-solid fa-spinner fa-spin mr-2"></i> LOADING HIGH SCORES...</td></tr>`;
 
             if (!db) {
-                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-8 text-yellow-400">当前处于离线模式。您可以点击右上角「云端设置」配置您的 Firebase 后端以启用全球排行榜。</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-8 text-yellow-400 arcade-font text-lg">OFFLINE MODE: 当前未连接云端排行榜，仅显示本地离线状态。</td></tr>`;
                 return;
             }
 
             try {
                 const { collection, getDocs, query } = window.firebaseModules;
-                const q = query(collection(db, "artifacts", "anime_quiz_universe_v3", "public", "data", "leaderboard"));
+                const q = query(collection(db, "artifacts", "arcade_quiz_v1", "public", "data", "leaderboard"));
                 const querySnapshot = await getDocs(q);
                 
                 const leaders = [];
-                querySnapshot.forEach((doc) => {
-                    leaders.push(doc.data());
-                });
-
+                querySnapshot.forEach((doc) => { leaders.push(doc.data()); });
                 leaders.sort((a, b) => b.score - a.score);
                 const top100 = leaders.slice(0, 100);
 
                 tbody.innerHTML = '';
                 if (top100.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="4" class="text-center py-8 text-gray-400">暂无排行数据，快去完成一次挑战抢占榜首吧！</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="4" class="text-center py-8 text-gray-400 arcade-font text-lg">暂无高分记录，快来创造第一名吧！</td></tr>`;
                     return;
                 }
 
                 top100.forEach((item, idx) => {
                     const tr = document.createElement('tr');
-                    tr.className = 'border-b border-anime-border/50 hover:bg-anime-border/20 transition-colors';
+                    tr.className = 'border-b border-pink-500/30 hover:bg-pink-500/15 transition-colors arcade-font text-xl';
                     
-                    let rankBadge = `<span class="font-mono text-xs text-gray-400">#${idx + 1}</span>`;
-                    if (idx === 0) rankBadge = `<span class="px-2 py-1 rounded-full bg-amber-500/20 text-amber-300 text-xs font-bold border border-amber-500/30"><i class="fa-solid fa-crown mr-1"></i>#1</span>`;
-                    if (idx === 1) rankBadge = `<span class="px-2 py-1 rounded-full bg-slate-300/20 text-slate-200 text-xs font-bold border border-slate-300/30">#2</span>`;
-                    if (idx === 2) rankBadge = `<span class="px-2 py-1 rounded-full bg-amber-700/20 text-amber-400 text-xs font-bold border border-amber-700/30">#3</span>`;
+                    let rankBadge = `<span class="text-gray-400 font-mono">#${idx + 1}</span>`;
+                    if (idx === 0) rankBadge = `<span class="text-yellow-400 font-bold"><i class="fa-solid fa-crown mr-1"></i>1ST</span>`;
+                    if (idx === 1) rankBadge = `<span class="text-cyan-300 font-bold">2ND</span>`;
+                    if (idx === 2) rankBadge = `<span class="text-amber-600 font-bold">3RD</span>`;
 
                     tr.innerHTML = `
-                        <td class="py-4 px-4">${rankBadge}</td>
-                        <td class="py-4 px-4 font-bold text-white flex items-center space-x-2">
-                            <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-fuchsia-600 to-cyan-400 flex items-center justify-center text-xs text-white">
-                                <i class="fa-solid fa-user"></i>
-                            </div>
-                            <span>${item.nickname}</span>
-                        </td>
-                        <td class="py-4 px-4 font-mono text-cyan-400 font-bold">${item.score} 分</td>
-                        <td class="py-4 px-4 text-xs text-gray-300">${item.accuracy} (${item.category || '综合'})</td>
+                        <td class="py-3 px-4">${rankBadge}</td>
+                        <td class="py-3 px-4 text-white font-bold tracking-wider">${item.nickname}</td>
+                        <td class="py-3 px-4 text-green-400 font-mono">${item.score} PTS</td>
+                        <td class="py-3 px-4 text-gray-300 text-base">${item.accuracy} (${item.category || '综合'})</td>
                     `;
                     tbody.appendChild(tr);
                 });
             } catch (e) {
-                console.error("读取排行榜失败:", e);
-                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-8 text-rose-400">读取云端排行榜出错，请检查 Firebase 配置。</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-8 text-rose-400 arcade-font">排行榜读取失败</td></tr>`;
             }
         }
 
@@ -415,27 +434,26 @@
         function renderHomeCategories() {
             const grid = document.getElementById('categories-grid');
             if (!grid) return;
-
             grid.innerHTML = '';
             
+            // All-in Card
             const allCard = document.createElement('div');
-            allCard.className = `glass-panel p-6 rounded-3xl border border-fuchsia-500/40 hover:border-fuchsia-400 transition-all duration-300 cursor-pointer group hover:scale-[1.02] shadow-xl relative overflow-hidden`;
+            allCard.className = `arcade-panel p-6 cursor-pointer group hover:scale-[1.01] transition-all relative overflow-hidden`;
             allCard.onclick = () => startQuiz('all');
             allCard.innerHTML = `
-                <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-fuchsia-500/10 rounded-full blur-2xl group-hover:bg-fuchsia-500/25 transition-all"></div>
                 <div class="flex items-center space-x-4 mb-4">
-                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-fuchsia-600 to-cyan-400 flex items-center justify-center text-white text-2xl shadow-neon">
-                        <i class="fa-solid fa-dice"></i>
+                    <div class="w-14 h-14 bg-pink-600 border-2 border-yellow-300 flex items-center justify-center text-white text-2xl shadow-pixel">
+                        <i class="fa-solid fa-dice-five"></i>
                     </div>
                     <div>
-                        <span class="text-xs font-bold uppercase tracking-wider text-fuchsia-400 bg-fuchsia-500/10 px-2.5 py-1 rounded-full border border-fuchsia-500/20">全站乱斗</span>
-                        <h3 class="text-xl font-bold mt-1 text-white group-hover:text-fuchsia-300 transition-colors">全模块综合挑战</h3>
+                        <span class="text-xs font-mono uppercase text-pink-400 bg-pink-950 px-2 py-0.5 border border-pink-500">RANDOM MIX</span>
+                        <h3 class="text-xl pixel-title mt-2 text-yellow-300 group-hover:text-white">全站乱斗挑战赛</h3>
                     </div>
                 </div>
-                <p class="text-gray-300 text-sm mb-6">随机抽取全库所有动漫的高难度题目，测试你的究极宅神段位并同步全球排行！</p>
-                <div class="flex items-center justify-between text-xs font-semibold text-fuchsia-400">
-                    <span><i class="fa-solid fa-database mr-1"></i> 共 ${questions.length} 道题库</span>
-                    <span class="flex items-center group-hover:translate-x-1 transition-transform">立即开始 <i class="fa-solid fa-arrow-right ml-1"></i></span>
+                <p class="text-gray-300 arcade-font text-lg mb-4">随机抽取全库所有二次元题目，考验全能宅神段位并上传全球街机高分榜！</p>
+                <div class="flex items-center justify-between text-sm font-mono text-cyan-400">
+                    <span>TOTAL: ${questions.length} QUESTIONS</span>
+                    <span class="group-hover:translate-x-1 transition-transform text-pink-400 font-bold">INSERT COIN ▶</span>
                 </div>
             `;
             grid.appendChild(allCard);
@@ -443,23 +461,22 @@
             categories.forEach(cat => {
                 const count = questions.filter(q => q.category === cat.id).length;
                 const card = document.createElement('div');
-                card.className = `glass-panel p-6 rounded-3xl border border-anime-border hover:border-cyan-400/50 transition-all duration-300 cursor-pointer group hover:scale-[1.02] shadow-xl relative overflow-hidden`;
+                card.className = `arcade-panel p-6 cursor-pointer group hover:scale-[1.01] transition-all relative overflow-hidden`;
                 card.onclick = () => startQuiz(cat.id);
                 card.innerHTML = `
-                    <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-cyan-500/10 rounded-full blur-2xl group-hover:bg-cyan-500/20 transition-all"></div>
                     <div class="flex items-center space-x-4 mb-4">
-                        <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr ${cat.gradient} flex items-center justify-center text-white text-2xl shadow-lg">
+                        <div class="w-14 h-14 bg-black border-2 border-cyan-400 flex items-center justify-center text-2xl ${cat.color} shadow-pixel-cyan">
                             <i class="fa-solid ${cat.icon}"></i>
                         </div>
                         <div>
-                            <span class="text-xs font-bold uppercase tracking-wider text-cyan-400 bg-cyan-500/10 px-2.5 py-1 rounded-full border border-cyan-500/20">专区挑战</span>
-                            <h3 class="text-xl font-bold mt-1 text-white group-hover:text-cyan-300 transition-colors">${cat.name}</h3>
+                            <span class="text-xs font-mono uppercase text-cyan-400 bg-cyan-950 px-2 py-0.5 border border-cyan-500">STAGE MODE</span>
+                            <h3 class="text-lg pixel-title mt-2 text-white group-hover:text-cyan-300">${cat.name}</h3>
                         </div>
                     </div>
-                    <p class="text-gray-300 text-sm mb-6">${cat.desc}</p>
-                    <div class="flex items-center justify-between text-xs font-semibold text-cyan-400">
-                        <span><i class="fa-solid fa-layer-group mr-1"></i> ${count} 道专属题目</span>
-                        <span class="flex items-center group-hover:translate-x-1 transition-transform">挑战专区 <i class="fa-solid fa-arrow-right ml-1"></i></span>
+                    <p class="text-gray-300 arcade-font text-lg mb-4">${cat.desc}</p>
+                    <div class="flex items-center justify-between text-sm font-mono text-green-400">
+                        <span>QUESTIONS: ${count}</span>
+                        <span class="group-hover:translate-x-1 transition-transform text-yellow-300 font-bold">START STAGE ▶</span>
                     </div>
                 `;
                 grid.appendChild(card);
@@ -477,7 +494,7 @@
             }
 
             if (currentQuizQuestions.length === 0) {
-                showCustomModal('题库空空如也', '该分类下还没有添加任何题目，请先前往题库管理后台添加题目！', 'fa-triangle-exclamation');
+                alert('该关卡题库暂无题目，请先前往 ADMIN CMS 添加题目！');
                 return;
             }
 
@@ -499,39 +516,21 @@
             const total = currentQuizQuestions.length;
 
             document.getElementById('quiz-category-title').innerText = activeCategory.name;
-            document.getElementById('quiz-progress-text').innerText = `第 ${currentQuestionIndex + 1} / ${total} 题`;
+            document.getElementById('quiz-progress-text').innerText = `STAGE ${currentQuestionIndex + 1} / ${total}`;
             document.getElementById('quiz-progress-bar').style.width = `${((currentQuestionIndex) / total) * 100}%`;
 
             document.getElementById('question-title').innerText = q.title;
 
             const typeBadge = document.getElementById('question-type-badge');
-            let typeName = '选择题';
-            if (q.type === 'blank') typeName = '填空题';
-            if (q.type === 'audio') typeName = '音频辨识';
-            if (q.type === 'video') typeName = '视频/图像鉴赏';
-            typeBadge.innerHTML = `<i class="fa-solid fa-tag mr-1"></i> ${typeName}`;
+            let typeName = 'SELECT CHOICE';
+            if (q.type === 'blank') typeName = 'FILL IN BLANK';
+            typeBadge.innerHTML = `<i class="fa-solid fa-code mr-1"></i> ${typeName}`;
 
             const mediaContainer = document.getElementById('question-media-container');
             mediaContainer.innerHTML = '';
             if (q.mediaUrl) {
                 mediaContainer.classList.remove('hidden');
-                if (q.type === 'audio' || q.mediaUrl.match(/\.(mp3|wav|ogg)$/i)) {
-                    mediaContainer.innerHTML = `
-                        <div class="p-4 bg-anime-dark rounded-2xl border border-anime-border flex items-center space-x-4">
-                            <div class="w-12 h-12 rounded-xl bg-fuchsia-500/20 text-fuchsia-400 flex items-center justify-center text-xl animate-pulse">
-                                <i class="fa-solid fa-music"></i>
-                            </div>
-                            <audio controls class="w-full">
-                                <source src="${q.mediaUrl}" type="audio/mpeg">
-                                您的浏览器不支持音频播放。
-                            </audio>
-                        </div>
-                    `;
-                } else {
-                    mediaContainer.innerHTML = `
-                        <img src="${q.mediaUrl}" alt="题目媒体" onerror="this.src='https://placehold.co/600x300/181b33/00f0ff?text=Anime+Image'" class="w-full max-h-64 rounded-2xl object-cover border border-anime-border shadow-lg">
-                    `;
-                }
+                mediaContainer.innerHTML = `<img src="${q.mediaUrl}" alt="media" class="w-full max-h-56 object-cover border-2 border-cyan-400">`;
             } else {
                 mediaContainer.classList.add('hidden');
             }
@@ -542,22 +541,22 @@
             if (q.type === 'blank') {
                 optionsContainer.innerHTML = `
                     <div class="space-y-4 pt-2">
-                        <input type="text" id="blank-user-input" placeholder="请输入您的答案..." class="w-full px-5 py-4 rounded-2xl bg-anime-dark border border-anime-border text-white focus:outline-none focus:border-cyan-400 transition-all text-lg font-medium shadow-inner">
-                        <button onclick="submitBlankAnswer()" class="w-full py-4 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 text-white font-bold shadow-neon-cyan transition-all">
-                            提交答案
+                        <input type="text" id="blank-user-input" placeholder="请输入您的答案..." class="w-full px-5 py-4 bg-black border-2 border-cyan-400 text-yellow-300 focus:outline-none focus:border-pink-500 font-mono text-xl shadow-inner">
+                        <button onclick="submitBlankAnswer()" class="w-full py-4 arcade-btn bg-cyan-500 text-black font-bold uppercase text-lg tracking-wider">
+                            SUBMIT ANSWER ➔
                         </button>
                     </div>
                 `;
             } else {
                 q.options.forEach((opt, idx) => {
                     const btn = document.createElement('button');
-                    btn.className = `w-full text-left p-4 sm:p-5 rounded-2xl bg-anime-dark/80 hover:bg-anime-border border border-anime-border hover:border-cyan-400/50 transition-all duration-200 flex items-center space-x-4 group shadow-md`;
+                    btn.className = `w-full text-left p-4 arcade-btn bg-black text-white flex items-center space-x-4 group`;
                     btn.onclick = () => submitChoiceAnswer(idx);
                     btn.innerHTML = `
-                        <div class="w-10 h-10 rounded-xl bg-anime-border group-hover:bg-cyan-500/20 group-hover:text-cyan-400 flex items-center justify-center font-bold text-gray-300 transition-colors shrink-0">
+                        <div class="w-10 h-10 bg-pink-600 border border-yellow-300 flex items-center justify-center font-bold text-white shrink-0 arcade-font text-2xl">
                             ${String.fromCharCode(65 + idx)}
                         </div>
-                        <span class="text-base text-gray-200 group-hover:text-white font-medium">${opt}</span>
+                        <span class="text-base text-gray-200 group-hover:text-yellow-300 font-medium">${opt}</span>
                     `;
                     optionsContainer.appendChild(btn);
                 });
@@ -584,14 +583,10 @@
 
                 if (timeLeft <= 0) {
                     clearInterval(timer);
-                    handleTimeOut();
+                    const q = currentQuizQuestions[currentQuestionIndex];
+                    showAnswerFeedback(false, `TIME UP! 正确答案是：${q.type === 'blank' ? q.answer : q.options[q.answer]}`, q.analysis);
                 }
             }, 1000);
-        }
-
-        function handleTimeOut() {
-            const q = currentQuizQuestions[currentQuestionIndex];
-            showAnswerFeedback(false, `时间到！正确答案是：${q.type === 'blank' ? q.answer : q.options[q.answer]}`, q.analysis);
         }
 
         function submitChoiceAnswer(selectedIndex) {
@@ -602,9 +597,9 @@
             if (isCorrect) {
                 score += 20 + timeLeft;
                 correctCount++;
-                showAnswerFeedback(true, '回答正确！太棒了！', q.analysis);
+                showAnswerFeedback(true, 'CORRECT! 完美命中！', q.analysis);
             } else {
-                showAnswerFeedback(false, `回答错误！正确答案是：${q.options[q.answer]}`, q.analysis);
+                showAnswerFeedback(false, `GAME OVER FOR THIS Q! 正确答案是：${q.options[q.answer]}`, q.analysis);
             }
         }
 
@@ -612,35 +607,27 @@
             clearInterval(timer);
             const inputVal = document.getElementById('blank-user-input').value.trim();
             const q = currentQuizQuestions[currentQuestionIndex];
-            
             const isCorrect = inputVal.toLowerCase() === String(q.answer).toLowerCase();
 
             if (isCorrect) {
                 score += 25;
                 correctCount++;
-                showAnswerFeedback(true, '太厉害了！填空完全正确！', q.analysis);
+                showAnswerFeedback(true, 'CORRECT! 填空完全正确！', q.analysis);
             } else {
-                showAnswerFeedback(false, `回答错误！正确答案是：${q.answer}`, q.analysis);
+                showAnswerFeedback(false, `GAME OVER! 正确答案是：${q.answer}`, q.analysis);
             }
         }
 
         function showAnswerFeedback(isCorrect, message, analysis) {
             const container = document.getElementById('question-options-container');
-            const buttons = container.querySelectorAll('button, input');
-            buttons.forEach(el => el.disabled = true);
+            container.querySelectorAll('button, input').forEach(el => el.disabled = true);
 
             const analysisBox = document.getElementById('quiz-analysis-box');
             analysisBox.classList.remove('hidden');
 
             const statusEl = document.getElementById('analysis-status');
-            statusEl.className = `p-4 rounded-2xl mb-4 font-bold flex items-center space-x-3 ${isCorrect ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'}`;
-            statusEl.innerHTML = `
-                <i class="fa-solid ${isCorrect ? 'fa-circle-check text-xl' : 'fa-circle-xmark text-xl'}"></i>
-                <div>
-                    <p>${message}</p>
-                </div>
-            `;
-
+            statusEl.className = `p-4 mb-4 font-bold flex items-center space-x-3 border-2 ${isCorrect ? 'bg-green-950/50 text-green-300 border-green-500' : 'bg-rose-950/50 text-rose-300 border-rose-500'}`;
+            statusEl.innerHTML = `<i class="fa-solid ${isCorrect ? 'fa-circle-check text-2xl' : 'fa-circle-xmark text-2xl'}"></i><div><p class="arcade-font text-xl">${message}</p></div>`;
             document.getElementById('analysis-text').innerText = analysis || '暂无详细解析。';
         }
 
@@ -649,7 +636,7 @@
             loadQuestion();
         }
 
-        // ================= RESULT & SHARE =================
+        // ================= RESULT & SUBMISSION =================
         function showResult() {
             switchView('result');
             const total = currentQuizQuestions.length;
@@ -659,666 +646,397 @@
             document.getElementById('result-correct-count').innerText = `${correctCount}/${total}`;
             document.getElementById('result-accuracy').innerText = `${accuracy}%`;
 
-            let comment = "究极二次元全能主宰！无所不知！";
-            if (accuracy < 60) {
-                comment = "还要多加练习和观看各类型动漫哦！";
-            } else if (accuracy < 90) {
-                comment = "表现卓越！顺利通关多模态动漫宇宙！";
-            }
-            document.getElementById('result-comment').innerText = comment;
-
             submitScoreToCloud(score, `${accuracy}%`, activeCategory ? activeCategory.name : '综合');
         }
 
-        function shareScoreCard() {
-            const scoreVal = document.getElementById('result-score').innerText;
-            const accVal = document.getElementById('result-accuracy').innerText;
-            const catName = activeCategory ? activeCategory.name : '综合挑战';
-            
-            const shareText = `【造梦星环二次元宇宙】我在「${catName}」挑战赛中获得了 ${scoreVal} 分（正确率 ${accVal}）！快来和我一起比拼全球二次元知识排名吧：${window.location.href}`;
-
-            const textArea = document.createElement("textarea");
-            textArea.value = shareText;
-            document.body.appendChild(textArea);
-            textArea.select();
-            try {
-                document.execCommand('copy');
-                showCustomModal('分享成功', '战绩文案与链接已成功复制到剪贴板！', 'fa-share-nodes');
-            } catch (err) {
-                showCustomModal('提示', '复制失败，请手动复制当前网页地址。', 'fa-triangle-exclamation');
-            }
-            document.body.removeChild(textArea);
-        }
-
-        function restartCurrentQuiz() {
-            startQuiz(activeCategory && categories.find(c => c.name === activeCategory.name) ? categories.find(c => c.name === activeCategory.name).id : 'all');
-        }
-
-        // ================= CMS MANAGEMENT =================
-        function renderCMSCategoriesList() {
-            const selectEl = document.getElementById('cms-q-category');
-            if (selectEl) {
-                selectEl.innerHTML = '';
-                categories.forEach(cat => {
-                    const opt = document.createElement('option');
-                    opt.value = cat.id;
-                    opt.innerText = cat.name;
-                    selectEl.appendChild(opt);
-                });
-            }
-        }
+        // ================= CMS ADMIN ENGINE =================
+        function renderCMSCategoriesList() {}
 
         function renderCMSQuestionsTable() {
             const tbody = document.getElementById('cms-questions-tbody');
             if (!tbody) return;
-
             tbody.innerHTML = '';
-            if (questions.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-gray-400">暂无题目，请在上方添加</td></tr>`;
-                return;
-            }
 
-            questions.forEach((q, idx) => {
-                const catObj = categories.find(c => c.id === q.category);
-                const catName = catObj ? catObj.name : '未知分类';
-                
-                let typeText = '选择题';
-                if (q.type === 'blank') typeText = '填空题';
-                if (q.type === 'audio') typeText = '音频题';
-                if (q.type === 'video') typeText = '视频/图像';
-
+            questions.forEach(q => {
                 const tr = document.createElement('tr');
-                tr.className = 'border-b border-anime-border/50 hover:bg-anime-border/20 transition-colors';
+                tr.className = 'border-b border-pink-500/30 hover:bg-black/50 arcade-font text-xl';
                 tr.innerHTML = `
-                    <td class="py-4 px-4 font-mono text-xs text-cyan-400">#${idx + 1}</td>
-                    <td class="py-4 px-4"><span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-fuchsia-500/10 text-fuchsia-300 border border-fuchsia-500/20">${catName}</span></td>
-                    <td class="py-4 px-4 font-medium max-w-xs truncate">${q.title}</td>
-                    <td class="py-4 px-4"><span class="text-xs text-gray-300 bg-anime-dark px-2.5 py-1 rounded-lg border border-anime-border">${typeText}</span></td>
-                    <td class="py-4 px-4 text-right space-x-2">
-                        <button onclick="editQuestion('${q.id}')" class="px-3 py-1.5 rounded-lg bg-cyan-500/20 hover:bg-cyan-500 text-cyan-300 hover:text-white transition-all text-xs font-semibold">
-                            <i class="fa-solid fa-pen-to-square mr-1"></i>编辑
-                        </button>
-                        <button onclick="deleteQuestion('${q.id}')" class="px-3 py-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500 text-rose-300 hover:text-white transition-all text-xs font-semibold">
-                            <i class="fa-solid fa-trash mr-1"></i>删除
-                        </button>
+                    <td class="py-3 px-4 font-mono text-cyan-400">${q.id}</td>
+                    <td class="py-3 px-4 text-white font-bold truncate max-w-xs">${q.title}</td>
+                    <td class="py-3 px-4 text-yellow-300">${q.category}</td>
+                    <td class="py-3 px-4">
+                        <button onclick="editQuestion('${q.id}')" class="px-3 py-1 arcade-btn bg-cyan-600 text-white text-sm mr-2 font-mono">EDIT</button>
+                        <button onclick="deleteQuestion('${q.id}')" class="px-3 py-1 arcade-btn bg-rose-600 text-white text-sm font-mono">DEL</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
         }
 
-        function handleQuestionTypeChange() {
-            const type = document.getElementById('cms-q-type').value;
-            const choiceBox = document.getElementById('cms-choice-options-box');
-            const blankBox = document.getElementById('cms-blank-answer-box');
-
-            if (type === 'blank') {
-                choiceBox.classList.add('hidden');
-                blankBox.classList.remove('hidden');
-            } else {
-                choiceBox.classList.remove('hidden');
-                blankBox.classList.add('hidden');
-            }
-        }
-
-        function handleImageUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            if (file.size > 2 * 1024 * 1024) {
-                showCustomModal('文件过大', '请上传小于 2MB 的图片文件！', 'fa-triangle-exclamation');
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const base64Str = e.target.result;
-                document.getElementById('cms-q-media').value = base64Str;
-                const previewImg = document.getElementById('cms-image-preview');
-                previewImg.src = base64Str;
-                previewImg.classList.remove('hidden');
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function addNewQuestionFromCMS(event) {
-            event.preventDefault();
-
-            const category = document.getElementById('cms-q-category').value;
-            const type = document.getElementById('cms-q-type').value;
-            const title = document.getElementById('cms-q-title').value.trim();
-            const mediaUrl = document.getElementById('cms-q-media').value.trim();
-            const analysis = document.getElementById('cms-q-analysis').value.trim();
-            const customTimer = parseInt(document.getElementById('cms-q-timer').value) || 25;
-
-            if (!title) {
-                showCustomModal('提示', '题目标题不能为空！', 'fa-triangle-exclamation');
-                return;
-            }
-
-            let options = [];
-            let answer = 0;
-
-            if (type === 'blank') {
-                const blankAns = document.getElementById('cms-blank-answer').value.trim();
-                if (!blankAns) {
-                    showCustomModal('提示', '填空题的标准答案不能为空！', 'fa-triangle-exclamation');
-                    return;
-                }
-                answer = blankAns;
-            } else {
-                const optA = document.getElementById('cms-opt-0').value.trim();
-                const optB = document.getElementById('cms-opt-1').value.trim();
-                const optC = document.getElementById('cms-opt-2').value.trim();
-                const optD = document.getElementById('cms-opt-3').value.trim();
-
-                if (!optA || !optB || !optC || !optD) {
-                    showCustomModal('提示', '选择题必须填写完整的 4 个选项！', 'fa-triangle-exclamation');
-                    return;
-                }
-                options = [optA, optB, optC, optD];
-                answer = parseInt(document.getElementById('cms-correct-index').value);
-            }
-
-            if (editingQuestionId) {
-                const index = questions.findIndex(q => q.id === editingQuestionId);
-                if (index !== -1) {
-                    questions[index] = {
-                        id: editingQuestionId, category, type, title, mediaUrl, options, answer,
-                        analysis: analysis || '暂无解析。', timer: customTimer
-                    };
-                }
-                editingQuestionId = null;
-                document.getElementById('cms-form-submit-btn').innerHTML = '<i class="fa-solid fa-plus mr-1"></i>保存并添加题目到题库';
-            } else {
-                const newQ = {
-                    id: 'q_' + Date.now(),
-                    category, type, title, mediaUrl, options, answer,
-                    analysis: analysis || '暂无解析。', timer: customTimer
-                };
-                questions.push(newQ);
-            }
-
-            saveData();
-            renderCMSQuestionsTable();
-            document.getElementById('cms-question-form').reset();
-            document.getElementById('cms-image-preview').classList.add('hidden');
-            handleQuestionTypeChange();
-
-            showCustomModal('保存成功', '题目已成功保存到本地题库中！', 'fa-circle-check');
-        }
-
-        function editQuestion(id) {
-            const q = questions.find(item => item.id === id);
-            if (!q) return;
-
-            editingQuestionId = q.id;
-            document.getElementById('cms-q-category').value = q.category;
-            document.getElementById('cms-q-type').value = q.type;
-            handleQuestionTypeChange();
-
-            document.getElementById('cms-q-timer').value = q.timer || 25;
-            document.getElementById('cms-q-title').value = q.title;
-            document.getElementById('cms-q-media').value = q.mediaUrl || '';
-            document.getElementById('cms-q-analysis').value = q.analysis || '';
-
-            if (q.mediaUrl) {
-                const previewImg = document.getElementById('cms-image-preview');
-                previewImg.src = q.mediaUrl;
-                previewImg.classList.remove('hidden');
-            } else {
-                document.getElementById('cms-image-preview').classList.add('hidden');
-            }
-
-            if (q.type === 'blank') {
-                document.getElementById('cms-blank-answer').value = q.answer;
-            } else {
-                if (q.options && q.options.length >= 4) {
-                    document.getElementById('cms-opt-0').value = q.options[0];
-                    document.getElementById('cms-opt-1').value = q.options[1];
-                    document.getElementById('cms-opt-2').value = q.options[2];
-                    document.getElementById('cms-opt-3').value = q.options[3];
-                }
-                document.getElementById('cms-correct-index').value = q.answer;
-            }
-
-            document.getElementById('cms-form-submit-btn').innerHTML = '<i class="fa-solid fa-pen-to-square mr-1"></i>保存修改';
-            document.getElementById('cms-question-form').scrollIntoView({ behavior: 'smooth' });
-        }
-
-        function deleteQuestion(id) {
-            questions = questions.filter(q => q.id !== id);
-            saveData();
-            renderCMSQuestionsTable();
-            showCustomModal('已删除', '题目已从本地题库中移除。', 'fa-trash');
-        }
-
-        function resetToDefaultData() {
-            categories = [...DEFAULT_CATEGORIES];
-            questions = [...DEFAULT_QUESTIONS];
-            saveData();
-            renderCMSQuestionsTable();
-            renderHomeCategories();
-            showCustomModal('重置成功', '已恢复至官方默认初始题库！', 'fa-rotate-right');
-        }
-
-        // ================= CUSTOM MODAL =================
-        function showCustomModal(title, message, iconClass) {
-            let modal = document.getElementById('custom-modal');
+        function openQuestionModal(qId = null) {
+            let modal = document.getElementById('question-edit-modal');
             if (!modal) {
                 modal = document.createElement('div');
-                modal.id = 'custom-modal';
-                modal.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4';
+                modal.id = 'question-edit-modal';
+                modal.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4';
                 document.body.appendChild(modal);
             }
 
+            const q = qId ? questions.find(item => item.id === qId) : { id: 'q_' + Date.now(), category: 'novice', type: 'choice', title: '', options: ['', '', '', ''], answer: 0, analysis: '', timer: 20 };
+
             modal.innerHTML = `
-                <div class="glass-panel p-8 rounded-3xl max-w-md w-full border border-fuchsia-500/30 shadow-2xl text-center space-y-4 animate-float">
-                    <div class="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-tr from-fuchsia-600 to-cyan-400 flex items-center justify-center text-white text-2xl shadow-neon">
-                        <i class="fa-solid ${iconClass}"></i>
+                <div class="arcade-panel p-6 sm:p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto space-y-4">
+                    <h3 class="text-2xl pixel-title text-yellow-300">${qId ? 'EDIT QUESTION' : 'NEW ARCADE QUESTION'}</h3>
+                    <div class="space-y-3 arcade-font text-lg">
+                        <div>
+                            <label class="text-cyan-400 block mb-1">所属关卡 (Category ID)</label>
+                            <select id="modal-q-cat" class="w-full p-2 bg-black border-2 border-cyan-400 text-white">
+                                <option value="novice" ${q.category==='novice'?'selected':''}>萌新村 (novice)</option>
+                                <option value="intermediate" ${q.category==='intermediate'?'selected':''}>资深骨灰 (intermediate)</option>
+                                <option value="master" ${q.category==='master'?'selected':''}>殿堂级 (master)</option>
+                                <option value="hardcore" ${q.category==='hardcore'?'selected':''}>究极肝帝 (hardcore)</option>
+                                <option value="legend" ${q.category==='legend'?'selected':''}>次元之神 (legend)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-cyan-400 block mb-1">题目类型</label>
+                            <select id="modal-q-type" class="w-full p-2 bg-black border-2 border-cyan-400 text-white" onchange="toggleModalType(this.value)">
+                                <option value="choice" ${q.type==='choice'?'selected':''}>四选一单选题</option>
+                                <option value="blank" ${q.type==='blank'?'selected':''}>填空题</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-cyan-400 block mb-1">题目名称 (Title)</label>
+                            <textarea id="modal-q-title" rows="3" class="w-full p-2 bg-black border-2 border-cyan-400 text-white">${q.title}</textarea>
+                        </div>
+                        <div id="modal-choices-area" class="${q.type==='blank'?'hidden':''}">
+                            <label class="text-cyan-400 block mb-1">选项 A, B, C, D (每行一个或按顺序)</label>
+                            <input type="text" id="opt-0" value="${q.options[0]||''}" class="w-full p-2 mb-2 bg-black border border-pink-500 text-white" placeholder="选项 A">
+                            <input type="text" id="opt-1" value="${q.options[1]||''}" class="w-full p-2 mb-2 bg-black border border-pink-500 text-white" placeholder="选项 B">
+                            <input type="text" id="opt-2" value="${q.options[2]||''}" class="w-full p-2 mb-2 bg-black border border-pink-500 text-white" placeholder="选项 C">
+                            <input type="text" id="opt-3" value="${q.options[3]||''}" class="w-full p-2 mb-2 bg-black border border-pink-500 text-white" placeholder="选项 D">
+                        </div>
+                        <div>
+                            <label class="text-cyan-400 block mb-1">正确答案 (单选题填 0-3 的索引，填空题填具体文字)</label>
+                            <input type="text" id="modal-q-answer" value="${q.answer}" class="w-full p-2 bg-black border-2 border-cyan-400 text-yellow-300">
+                        </div>
+                        <div>
+                            <label class="text-cyan-400 block mb-1">题目解析 (Analysis)</label>
+                            <textarea id="modal-q-analysis" rows="2" class="w-full p-2 bg-black border-2 border-cyan-400 text-white">${q.analysis||''}</textarea>
+                        </div>
                     </div>
-                    <h3 class="text-xl font-black text-white">${title}</h3>
-                    <p class="text-gray-300 text-sm leading-relaxed">${message}</p>
-                    <button onclick="document.getElementById('custom-modal').remove()" class="w-full py-3 rounded-xl bg-gradient-to-r from-fuchsia-600 to-cyan-500 hover:from-fuchsia-500 text-white font-bold shadow-neon transition-all">
-                        确定
-                    </button>
+                    <div class="flex gap-3 pt-2">
+                        <button onclick="document.getElementById('question-edit-modal').remove()" class="w-1/2 py-3 arcade-btn bg-gray-800 text-gray-300 uppercase font-bold">CANCEL</button>
+                        <button onclick="saveQuestionFromModal('${q.id}')" class="w-1/2 py-3 arcade-btn bg-green-500 text-black uppercase font-bold">SAVE QUESTION</button>
+                    </div>
                 </div>
             `;
         }
 
-        window.onload = function() {
-            initData();
-            renderHomeCategories();
+        function toggleModalType(val) {
+            const area = document.getElementById('modal-choices-area');
+            if (val === 'blank') area.classList.add('hidden');
+            else area.classList.remove('hidden');
+        }
 
-            const savedFb = localStorage.getItem('anime_fb_config');
-            if (savedFb) {
-                const config = JSON.parse(savedFb);
-                document.getElementById('fb-api-key').value = config.apiKey || '';
-                document.getElementById('fb-auth-domain').value = config.authDomain || '';
-                document.getElementById('fb-project-id').value = config.projectId || '';
-                initFirebaseClient(config.apiKey, config.authDomain, config.projectId);
+        function editQuestion(qId) {
+            openQuestionModal(qId);
+        }
+
+        function deleteQuestion(qId) {
+            if (confirm('确认删除该条题目吗？')) {
+                questions = questions.filter(item => item.id !== qId);
+                saveData();
+                renderCMSQuestionsTable();
             }
+        }
+
+        function saveQuestionFromModal(qId) {
+            const cat = document.getElementById('modal-q-cat').value;
+            const type = document.getElementById('modal-q-type').value;
+            const title = document.getElementById('modal-q-title').value.trim();
+            const rawAns = document.getElementById('modal-q-answer').value.trim();
+            const analysis = document.getElementById('modal-q-analysis').value.trim();
+
+            let options = [];
+            let answer = rawAns;
+
+            if (type === 'choice') {
+                options = [
+                    document.getElementById('opt-0').value.trim(),
+                    document.getElementById('opt-1').value.trim(),
+                    document.getElementById('opt-2').value.trim(),
+                    document.getElementById('opt-3').value.trim()
+                ];
+                answer = parseInt(rawAns, 10);
+            }
+
+            const existingIdx = questions.findIndex(item => item.id === qId);
+            const newObj = { id: qId, category: cat, type, title, options, answer, analysis, timer: 20 };
+
+            if (existingIdx >= 0) {
+                questions[existingIdx] = newObj;
+            } else {
+                questions.push(newObj);
+            }
+
+            saveData();
+            document.getElementById('question-edit-modal').remove();
+            renderCMSQuestionsTable();
+            alert('保存成功！数据已更新至本地。');
+        }
+
+        // ================= EXPORT & IMPORT =================
+        function exportQuestionsJSON() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(questions, null, 2));
+            const dlAnchorElem = document.createElement('a');
+            dlAnchorElem.setAttribute("href", dataStr);
+            dlAnchorElem.setAttribute("download", "arcade_questions_backup.json");
+            dlAnchorElem.click();
+        }
+
+        window.onload = () => {
+            initData();
+            const savedFb = localStorage.getItem('arcade_fb_config');
+            if (savedFb) {
+                try {
+                    const cfg = JSON.parse(savedFb);
+                    initFirebaseClient(cfg.apiKey, cfg.authDomain, cfg.projectId);
+                } catch(e) {}
+            }
+            switchView('home');
         };
     </script>
 </head>
-<body class="min-h-screen flex flex-col bg-anime-dark text-gray-100 selection:bg-fuchsia-500 selection:text-white">
+<body class="crt min-h-screen flex flex-col justify-between selection:bg-pink-500 selection:text-white">
 
-    <!-- Top Navigation Header -->
-    <header class="border-b border-anime-border/60 bg-anime-card/50 backdrop-blur-md sticky top-0 z-40">
-        <div class="max-w-6xl mx-auto px-4 h-20 flex items-center justify-between">
+    <!-- TOP ARCADE HEADER -->
+    <header class="border-b-4 border-pink-500 bg-black/90 sticky top-0 z-40 backdrop-blur-md">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
             <div class="flex items-center space-x-3 cursor-pointer" onclick="switchView('home')">
-                <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-fuchsia-600 to-cyan-400 flex items-center justify-center text-white text-xl shadow-neon animate-float">
+                <div class="w-10 h-10 bg-yellow-300 border-2 border-pink-500 flex items-center justify-center text-black font-black text-xl shadow-pixel">
                     <i class="fa-solid fa-gamepad"></i>
                 </div>
                 <div>
-                    <h1 class="font-black text-lg sm:text-xl tracking-tight bg-gradient-to-r from-white via-cyan-200 to-fuchsia-400 bg-clip-text text-transparent">造梦星环二次元宇宙</h1>
-                    <p class="text-xs text-gray-400 font-mono">DREAM RING ANIME UNIVERSE v3.3 (SECURE)</p>
+                    <h1 class="pixel-title text-sm sm:text-base text-yellow-300 tracking-wider">ARCADE UNIVERSE</h1>
+                    <p class="arcade-font text-cyan-400 text-sm" id="cloud-status-badge"><span class="inline-block w-2.5 h-2.5 rounded-full bg-yellow-400 mr-1"></span> LOCAL ARCADE</p>
                 </div>
             </div>
 
-            <div class="flex items-center space-x-2 sm:space-x-3">
-                <div id="cloud-status-badge" class="hidden sm:flex items-center text-xs font-mono px-3 py-1.5 rounded-full bg-anime-dark border border-anime-border text-gray-400">
-                    <span class="inline-block w-2 h-2 rounded-full bg-amber-400 mr-1"></span> 离线模式
-                </div>
-                <div id="current-user-badge" class="hidden md:flex items-center text-xs font-mono px-3 py-1.5 rounded-full bg-anime-dark border border-anime-border text-cyan-300">
-                    <i class="fa-solid fa-user-slash mr-1"></i> 未登录
-                </div>
-                <button onclick="switchView('leaderboard')" class="px-3.5 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500 text-amber-300 hover:text-white border border-amber-500/30 text-xs sm:text-sm font-bold transition-all flex items-center space-x-1.5">
-                    <i class="fa-solid fa-trophy"></i>
-                    <span class="hidden sm:inline">全球排行榜</span>
+            <div class="flex items-center space-x-3 text-sm">
+                <span id="current-user-badge" class="px-3 py-1 bg-gray-900 border border-cyan-400 text-cyan-300 arcade-font text-lg"><i class="fa-solid fa-user-slash text-gray-500 mr-1"></i> GUEST</span>
+                <button onclick="switchView('leaderboard')" class="px-3 py-2 arcade-btn bg-yellow-400 text-black font-bold uppercase text-xs">
+                    <i class="fa-solid fa-trophy mr-1"></i> 排行榜
                 </button>
-                <button onclick="switchView('auth')" class="px-3.5 py-2 rounded-xl bg-cyan-500/20 hover:bg-cyan-500 text-cyan-300 hover:text-white border border-cyan-500/30 text-xs sm:text-sm font-bold transition-all flex items-center space-x-1.5">
-                    <i class="fa-solid fa-cloud"></i>
-                    <span class="hidden sm:inline">云端设置</span>
+                <button onclick="requestCmsAccess()" class="px-3 py-2 arcade-btn bg-pink-600 text-white font-bold uppercase text-xs">
+                    <i class="fa-solid fa-gear mr-1"></i> 管理后台
                 </button>
-                <!-- Protected CMS Button -->
-                <button onclick="requestCmsAccess()" class="px-3.5 py-2 rounded-xl bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 text-white text-xs sm:text-sm font-bold shadow-neon transition-all flex items-center space-x-1.5">
-                    <i class="fa-solid fa-shield-halved"></i>
-                    <span class="hidden sm:inline">题库管理</span>
+                <button onclick="switchView('auth')" class="px-3 py-2 arcade-btn bg-cyan-500 text-black font-bold uppercase text-xs">
+                    <i class="fa-solid fa-cloud mr-1"></i> 云端设置
                 </button>
             </div>
         </div>
     </header>
 
-    <!-- Main Container -->
-    <main class="flex-grow max-w-6xl w-full mx-auto px-4 py-8">
+    <!-- MAIN VIEW CONTAINER -->
+    <main class="max-w-6xl mx-auto px-4 py-8 w-full flex-grow">
 
-        <!-- ================= 1. HOME VIEW ================= -->
-        <div id="view-home" class="space-y-10">
-            <div class="glass-panel p-8 sm:p-12 rounded-3xl border border-fuchsia-500/30 relative overflow-hidden shadow-2xl">
-                <div class="absolute -right-10 -top-10 w-64 h-64 bg-fuchsia-500/15 rounded-full blur-3xl pointer-events-none"></div>
-                <div class="absolute -left-10 -bottom-10 w-64 h-64 bg-cyan-500/15 rounded-full blur-3xl pointer-events-none"></div>
-                
-                <div class="relative z-10 max-w-2xl space-y-4">
-                    <span class="px-3 py-1 rounded-full text-xs font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
-                        <i class="fa-solid fa-shield-halved mr-1"></i> 后台密码鉴权保护已启用
-                    </span>
-                    <h2 class="text-3xl sm:text-5xl font-black tracking-tight leading-tight">
-                        开启你的 <span class="bg-gradient-to-r from-cyan-400 to-fuchsia-500 bg-clip-text text-transparent">造梦星环二次元宇宙</span> 探险
-                    </h2>
-                    <p class="text-gray-300 text-sm leading-relaxed">
-                        访客可以通过 GitHub 链接直接畅玩所有答题专区与查看全球排行榜；而「题库管理」后台现已加入安全弹窗密码验证，防止未经授权的修改！
-                    </p>
-                    <div class="pt-4 flex flex-wrap gap-4">
-                        <button onclick="startQuiz('all')" class="px-8 py-4 rounded-2xl bg-gradient-to-r from-fuchsia-600 to-cyan-500 hover:from-fuchsia-500 text-white font-bold shadow-neon transition-all flex items-center space-x-3 text-base">
-                            <i class="fa-solid fa-play text-lg"></i>
-                            <span>开始全站乱斗</span>
-                        </button>
-                        <button onclick="switchView('leaderboard')" class="px-6 py-4 rounded-2xl bg-anime-card hover:bg-anime-border border border-anime-border text-amber-300 font-semibold transition-all flex items-center space-x-2 text-base">
-                            <i class="fa-solid fa-trophy"></i>
-                            <span>查看全球排行榜</span>
-                        </button>
+        <!-- 1. HOME VIEW -->
+        <section id="view-home" class="space-y-8">
+            <div class="arcade-panel p-6 sm:p-10 text-center space-y-4 relative overflow-hidden">
+                <div class="absolute -top-10 -right-10 w-40 h-40 bg-pink-500/20 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="inline-block px-4 py-1 bg-pink-600 border border-yellow-300 text-white arcade-font text-xl uppercase animate-blink mb-2">
+                    INSERT COIN TO START
+                </div>
+                <h2 class="text-3xl sm:text-5xl pixel-title text-yellow-300 leading-tight">究极二次元知识挑战赛</h2>
+                <p class="text-gray-300 arcade-font text-xl max-w-2xl mx-auto">
+                    欢迎来到造梦星像素街机宇宙！选择你的挑战关卡，测试你的究极宅神段位，登顶全球高分榜！
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="categories-grid">
+                <!-- Dynamically rendered categories -->
+            </div>
+        </section>
+
+        <!-- 2. QUIZ VIEW -->
+        <section id="view-quiz" class="hidden max-w-3xl mx-auto space-y-6">
+            <div class="arcade-panel p-4 flex items-center justify-between">
+                <div>
+                    <span id="quiz-category-title" class="text-cyan-400 arcade-font text-xl uppercase font-bold">STAGE</span>
+                    <h3 id="quiz-progress-text" class="text-white pixel-title text-xs mt-1">第 1 / 5 题</h3>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <div class="w-12 h-12 bg-black border-2 border-yellow-300 flex items-center justify-center text-yellow-300 arcade-font text-3xl shadow-pixel-yellow" id="quiz-timer">
+                        20
                     </div>
                 </div>
             </div>
 
-            <div class="space-y-6">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-xl font-black flex items-center space-x-2">
-                        <i class="fa-solid fa-compass text-fuchsia-400 mr-2"></i>
-                        <span>选择难度专区</span>
-                    </h3>
-                </div>
-
-                <div id="categories-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-            </div>
-        </div>
-
-        <!-- ================= 2. QUIZ VIEW ================= -->
-        <div id="view-quiz" class="hidden max-w-3xl mx-auto space-y-6">
-            <div class="glass-panel p-6 rounded-3xl border border-anime-border flex flex-col space-y-4">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-3">
-                        <span id="quiz-category-title" class="px-3 py-1 rounded-full text-xs font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">专区</span>
-                        <span id="quiz-progress-text" class="text-xs font-mono text-gray-400">第 1 / 5 题</span>
-                    </div>
-                    <div class="flex items-center space-x-2 bg-anime-dark px-3.5 py-1.5 rounded-full border border-anime-border text-fuchsia-400 font-mono text-sm font-bold">
-                        <i class="fa-solid fa-stopwatch"></i>
-                        <span id="quiz-timer">20</span>s
-                    </div>
-                </div>
-
-                <div class="w-full bg-anime-dark h-2 rounded-full overflow-hidden border border-anime-border">
-                    <div id="quiz-progress-bar" class="bg-gradient-to-r from-cyan-400 to-fuchsia-500 h-full w-0 transition-all duration-300"></div>
-                </div>
-                <div class="w-full bg-anime-dark h-1 rounded-full overflow-hidden">
-                    <div id="quiz-timer-bar" class="bg-fuchsia-500 h-full w-full transition-all duration-1000"></div>
-                </div>
+            <div class="w-full bg-gray-900 border-2 border-pink-500 h-3">
+                <div id="quiz-progress-bar" class="bg-gradient-to-r from-pink-500 to-yellow-300 h-full transition-all duration-300" style="width: 0%;"></div>
             </div>
 
-            <div class="glass-panel p-8 sm:p-10 rounded-3xl border border-fuchsia-500/30 shadow-2xl space-y-6 relative">
+            <div class="arcade-panel p-6 sm:p-8 space-y-6">
                 <div class="flex items-center justify-between">
-                    <span id="question-type-badge" class="px-3 py-1 rounded-lg text-xs font-bold bg-fuchsia-500/10 text-fuchsia-300 border border-fuchsia-500/20">
+                    <span id="question-type-badge" class="px-3 py-1 bg-cyan-950 border border-cyan-400 text-cyan-300 arcade-font text-lg">
                         <i class="fa-solid fa-tag mr-1"></i> 选择题
                     </span>
                 </div>
 
-                <h3 id="question-title" class="text-xl sm:text-2xl font-bold leading-snug text-white">题目加载中...</h3>
+                <h2 id="question-title" class="text-xl sm:text-2xl text-white font-bold leading-relaxed">
+                    加载中...
+                </h2>
+
                 <div id="question-media-container" class="hidden"></div>
-                <div id="question-options-container" class="space-y-3 pt-2"></div>
 
-                <div id="quiz-analysis-box" class="hidden pt-4 border-t border-anime-border space-y-4">
-                    <div id="analysis-status" class="p-4 rounded-2xl font-bold"></div>
-                    <div class="p-4 rounded-2xl bg-anime-dark border border-anime-border space-y-2">
-                        <span class="text-xs font-bold text-cyan-400 uppercase tracking-wider">剧情解析</span>
-                        <p id="analysis-text" class="text-sm text-gray-300 leading-relaxed"></p>
-                    </div>
-                    <button onclick="nextQuestion()" class="w-full py-4 rounded-2xl bg-gradient-to-r from-fuchsia-600 to-cyan-500 hover:from-fuchsia-500 text-white font-bold shadow-neon transition-all flex items-center justify-center space-x-2">
-                        <span>下一题</span>
-                        <i class="fa-solid fa-arrow-right"></i>
+                <div id="question-options-container" class="space-y-4">
+                    <!-- Options injected here -->
+                </div>
+
+                <div id="quiz-analysis-box" class="hidden pt-4 border-t border-pink-500/40 space-y-3">
+                    <div id="analysis-status"></div>
+                    <p class="text-gray-300 arcade-font text-lg leading-relaxed" id="analysis-text"></p>
+                    <button onclick="nextQuestion()" class="w-full py-4 arcade-btn bg-yellow-400 text-black font-bold uppercase text-lg tracking-wider">
+                        NEXT STAGE ➔
                     </button>
                 </div>
             </div>
-        </div>
+        </section>
 
-        <!-- ================= 3. RESULT VIEW ================= -->
-        <div id="view-result" class="hidden max-w-2xl mx-auto space-y-6 text-center">
-            <div id="result-share-card" class="glass-panel p-8 sm:p-12 rounded-3xl space-y-6 border border-fuchsia-500/30 shadow-2xl relative overflow-hidden">
-                <div class="absolute top-4 right-4 text-xs font-mono text-fuchsia-400 bg-fuchsia-500/10 px-3 py-1 rounded-full border border-fuchsia-500/20">
-                    Cloud Leaderboard Synced ☁️🏆
+        <!-- 3. RESULT VIEW -->
+        <section id="view-result" class="hidden max-w-xl mx-auto text-center space-y-6">
+            <div class="arcade-panel p-8 sm:p-10 space-y-6">
+                <div class="w-20 h-20 mx-auto bg-pink-600 border-2 border-yellow-300 flex items-center justify-center text-white text-4xl shadow-pixel">
+                    <i class="fa-solid fa-award"></i>
                 </div>
-
-                <div class="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-tr from-fuchsia-600 to-cyan-400 flex items-center justify-center shadow-neon animate-float">
-                    <i class="fa-solid fa-trophy text-white text-3xl"></i>
-                </div>
-
                 <div class="space-y-2">
-                    <span class="px-3 py-1 rounded-full text-xs font-bold bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/30">挑战成功 & 已同步云端</span>
-                    <h3 class="text-3xl font-black mt-2">恭喜完成挑战！</h3>
-                    <p id="result-comment" class="text-gray-300 text-sm">战绩已成功写入全球排行榜！</p>
+                    <h2 class="pixel-title text-2xl text-yellow-300">STAGE CLEAR!</h2>
+                    <p class="arcade-font text-gray-400 text-xl">挑战圆满完成，战绩已存档！</p>
                 </div>
 
-                <div class="grid grid-cols-3 gap-4 py-4">
-                    <div class="p-4 rounded-2xl bg-anime-card border border-anime-border">
-                        <span class="text-xs text-gray-400">最终得分</span>
-                        <p id="result-score" class="text-2xl font-black text-fuchsia-400 mt-1">100</p>
+                <div class="grid grid-cols-3 gap-4 pt-4 border-t border-pink-500/30">
+                    <div class="bg-black p-4 border border-cyan-400">
+                        <span class="text-xs text-gray-400 arcade-font block">FINAL SCORE</span>
+                        <span id="result-score" class="text-2xl sm:text-3xl pixel-title text-green-400">0</span>
                     </div>
-                    <div class="p-4 rounded-2xl bg-anime-card border border-anime-border">
-                        <span class="text-xs text-gray-400">正确题数</span>
-                        <p id="result-correct-count" class="text-2xl font-black text-cyan-400 mt-1">5/5</p>
+                    <div class="bg-black p-4 border border-cyan-400">
+                        <span class="text-xs text-gray-400 arcade-font block">CORRECT</span>
+                        <span id="result-correct-count" class="text-2xl sm:text-3xl pixel-title text-yellow-300">0/0</span>
                     </div>
-                    <div class="p-4 rounded-2xl bg-anime-card border border-anime-border">
-                        <span class="text-xs text-gray-400">正确率</span>
-                        <p id="result-accuracy" class="text-2xl font-black text-amber-400 mt-1">100%</p>
+                    <div class="bg-black p-4 border border-cyan-400">
+                        <span class="text-xs text-gray-400 arcade-font block">ACCURACY</span>
+                        <span id="result-accuracy" class="text-2xl sm:text-3xl pixel-title text-pink-400">0%</span>
                     </div>
                 </div>
-            </div>
 
-            <div class="flex flex-wrap justify-center gap-4 pt-2">
-                <button onclick="switchView('leaderboard')" class="px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 text-white font-bold shadow-neon transition-all flex items-center space-x-2">
-                    <i class="fa-solid fa-trophy"></i>
-                    <span>查看全球排行榜</span>
-                </button>
-                <button onclick="shareScoreCard()" class="px-6 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 text-white font-bold shadow-neon-cyan transition-all flex items-center space-x-2">
-                    <i class="fa-solid fa-share-nodes"></i>
-                    <span>复制战绩与分享</span>
-                </button>
-                <button onclick="restartCurrentQuiz()" class="px-6 py-3 rounded-xl bg-gradient-to-r from-fuchsia-600 to-pink-600 hover:from-fuchsia-500 text-white font-bold shadow-neon transition-all flex items-center space-x-2">
-                    <i class="fa-solid fa-rotate-right"></i>
-                    <span>再玩一次</span>
-                </button>
-                <button onclick="switchView('home')" class="px-6 py-3 rounded-xl bg-anime-card hover:bg-anime-border text-gray-300 border border-anime-border font-semibold transition-all flex items-center space-x-2">
-                    <i class="fa-solid fa-house"></i>
-                    <span>返回大厅</span>
-                </button>
-            </div>
-        </div>
-
-        <!-- ================= 4. LEADERBOARD VIEW ================= -->
-        <div id="view-leaderboard" class="hidden max-w-4xl mx-auto space-y-8">
-            <div class="glass-panel p-8 rounded-3xl border border-amber-500/30 space-y-6">
-                <div class="flex items-center justify-between border-b border-anime-border pb-6">
-                    <div>
-                        <h3 class="text-2xl font-black flex items-center space-x-3 text-amber-400">
-                            <i class="fa-solid fa-trophy"></i>
-                            <span>全球巅峰排行榜 (Cloud Leaderboard)</span>
-                        </h3>
-                        <p class="text-gray-400 text-sm mt-1">汇聚全球二次元挑战者的巅峰战绩，实时排行前 100 名神级宅神。</p>
-                    </div>
-                    <button onclick="fetchAndRenderLeaderboard()" class="px-4 py-2.5 rounded-xl bg-amber-500/20 hover:bg-amber-500 text-amber-300 hover:text-white border border-amber-500/30 transition-all text-xs font-bold flex items-center space-x-2">
-                        <i class="fa-solid fa-rotate-right"></i>
-                        <span>刷新排行榜</span>
+                <div class="flex gap-4 pt-4">
+                    <button onclick="switchView('leaderboard')" class="w-1/2 py-4 arcade-btn bg-cyan-500 text-black font-bold uppercase text-sm">
+                        VIEW RANKING
+                    </button>
+                    <button onclick="switchView('home')" class="w-1/2 py-4 arcade-btn bg-pink-600 text-white font-bold uppercase text-sm">
+                        REPLAY MENU
                     </button>
                 </div>
+            </div>
+        </section>
 
+        <!-- 4. LEADERBOARD VIEW -->
+        <section id="view-leaderboard" class="hidden max-w-3xl mx-auto space-y-6">
+            <div class="arcade-panel p-6 flex items-center justify-between">
+                <div>
+                    <h2 class="pixel-title text-xl text-yellow-300"><i class="fa-solid fa-trophy mr-2 text-yellow-400"></i> HIGH SCORES</h2>
+                    <p class="arcade-font text-gray-400 text-lg mt-1">全球街机巅峰排行榜</p>
+                </div>
+                <button onclick="switchView('home')" class="px-4 py-2 arcade-btn bg-pink-600 text-white text-xs uppercase font-bold">BACK</button>
+            </div>
+
+            <div class="arcade-panel overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
-                            <tr class="border-b border-anime-border text-xs text-gray-400 uppercase tracking-wider">
-                                <th class="py-3 px-4">排名</th>
-                                <th class="py-3 px-4">挑战者昵称</th>
-                                <th class="py-3 px-4">积分</th>
-                                <th class="py-3 px-4">正确率 / 专区</th>
+                            <tr class="bg-pink-950 text-yellow-300 arcade-font text-xl border-b-2 border-pink-500">
+                                <th class="py-3 px-4">RANK</th>
+                                <th class="py-3 px-4">PLAYER</th>
+                                <th class="py-3 px-4">SCORE</th>
+                                <th class="py-3 px-4">STATS</th>
                             </tr>
                         </thead>
                         <tbody id="leaderboard-tbody">
-                            <tr>
-                                <td colspan="4" class="text-center py-8 text-gray-400">正在加载排行榜...</td>
-                            </tr>
+                            <!-- Injected leaderboard items -->
                         </tbody>
                     </table>
                 </div>
             </div>
-        </div>
+        </section>
 
-        <!-- ================= 5. AUTH / CLOUD CONFIG VIEW ================= -->
-        <div id="view-auth" class="hidden max-w-xl mx-auto space-y-8">
-            <div class="glass-panel p-8 rounded-3xl border border-cyan-500/30 space-y-6">
-                <div class="border-b border-anime-border pb-4">
-                    <h3 class="text-2xl font-black flex items-center space-x-3 text-cyan-400">
-                        <i class="fa-solid fa-cloud"></i>
-                        <span>Firebase 云端与认证设置</span>
-                    </h3>
-                    <p class="text-gray-400 text-sm mt-1">接入您自己的 Firebase 项目以启用云端排行榜与匿名自动登录功能。</p>
+        <!-- 5. CMS ADMIN VIEW -->
+        <section id="view-cms" class="hidden max-w-5xl mx-auto space-y-6">
+            <div class="arcade-panel p-6 flex flex-wrap items-center justify-between gap-4">
+                <div>
+                    <h2 class="pixel-title text-xl text-yellow-300"><i class="fa-solid fa-screwdriver-wrench mr-2 text-cyan-400"></i> ADMIN CMS</h2>
+                    <p class="arcade-font text-gray-400 text-lg">题库与关卡管理后台</p>
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="exportQuestionsJSON()" class="px-4 py-2 arcade-btn bg-cyan-600 text-white text-xs uppercase font-bold">导出题库 JSON</button>
+                    <button onclick="openQuestionModal()" class="px-4 py-2 arcade-btn bg-green-500 text-black text-xs uppercase font-bold">+ 新增题目</button>
+                    <button onclick="switchView('home')" class="px-4 py-2 arcade-btn bg-pink-600 text-white text-xs uppercase font-bold">退出后台</button>
+                </div>
+            </div>
+
+            <div class="arcade-panel overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-pink-950 text-yellow-300 arcade-font text-xl border-b-2 border-pink-500">
+                                <th class="py-3 px-4">ID</th>
+                                <th class="py-3 px-4">QUESTION TITLE</th>
+                                <th class="py-3 px-4">CATEGORY</th>
+                                <th class="py-3 px-4">ACTIONS</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cms-questions-tbody">
+                            <!-- Injected CMS list -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- 6. FIREBASE CLOUD CONFIG VIEW -->
+        <section id="view-auth" class="hidden max-w-md mx-auto space-y-6">
+            <div class="arcade-panel p-6 sm:p-8 space-y-6">
+                <div>
+                    <h2 class="pixel-title text-xl text-yellow-300 mb-1"><i class="fa-solid fa-cloud text-cyan-400 mr-2"></i> FIREBASE CLOUD</h2>
+                    <p class="arcade-font text-gray-300 text-lg">配置你的云端数据库以启用全球排行榜与实时同步。</p>
                 </div>
 
-                <form onsubmit="handleFirebaseConfigSubmit(event)" class="space-y-4">
-                    <div class="space-y-2">
-                        <label class="text-xs font-semibold text-gray-300">Firebase API Key</label>
-                        <input type="text" id="fb-api-key" placeholder="例如：AIzaSy..." class="w-full px-4 py-3 rounded-xl bg-anime-dark border border-anime-border text-white focus:outline-none focus:border-cyan-400 font-mono text-sm">
-                    </div>
-                    <div class="space-y-2">
-                        <label class="text-xs font-semibold text-gray-300">Auth Domain</label>
-                        <input type="text" id="fb-auth-domain" placeholder="例如：your-app.firebaseapp.com" class="w-full px-4 py-3 rounded-xl bg-anime-dark border border-anime-border text-white focus:outline-none focus:border-cyan-400 font-mono text-sm">
-                    </div>
-                    <div class="space-y-2">
-                        <label class="text-xs font-semibold text-gray-300">Project ID</label>
-                        <input type="text" id="fb-project-id" placeholder="例如：your-app-id" class="w-full px-4 py-3 rounded-xl bg-anime-dark border border-anime-border text-white focus:outline-none focus:border-cyan-400 font-mono text-sm">
-                    </div>
-
-                    <button type="submit" class="w-full py-4 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 text-white font-bold shadow-neon-cyan transition-all flex items-center justify-center space-x-2">
-                        <i class="fa-solid fa-check mr-1"></i>
-                        <span>保存配置并连接云端</span>
-                    </button>
-                </form>
-            </div>
-        </div>
-
-        <!-- ================= 6. CMS VIEW (PROTECTED) ================= -->
-        <div id="view-cms" class="hidden max-w-4xl mx-auto space-y-8">
-            <div class="glass-panel p-8 rounded-3xl border border-fuchsia-500/30 space-y-6">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-anime-border pb-6">
+                <form onsubmit="handleFirebaseConfigSubmit(event)" class="space-y-4 arcade-font text-lg">
                     <div>
-                        <h3 class="text-2xl font-black flex items-center space-x-3">
-                            <i class="fa-solid fa-database text-fuchsia-400"></i>
-                            <span>本地题库管理系统 (CMS - 已授权)</span>
-                        </h3>
-                        <p class="text-gray-400 text-sm mt-1">管理员已验证通过，您可以安全地添加、编辑或删除多模态题目。</p>
+                        <label class="block text-cyan-400 mb-1">API Key</label>
+                        <input type="text" id="fb-api-key" placeholder="AIzaSy..." class="w-full p-3 bg-black border-2 border-cyan-400 text-white font-mono text-base">
                     </div>
-                    <button onclick="resetToDefaultData()" class="px-4 py-2.5 rounded-xl bg-rose-500/20 hover:bg-rose-500 text-rose-300 hover:text-white border border-rose-500/30 transition-all text-xs font-bold flex items-center space-x-2">
-                        <i class="fa-solid fa-rotate-right"></i>
-                        <span>恢复官方默认题库</span>
-                    </button>
-                </div>
-
-                <form id="cms-question-form" onsubmit="addNewQuestionFromCMS(event)" class="space-y-6">
-                    <h4 id="cms-form-title" class="text-lg font-bold text-cyan-400 flex items-center space-x-2">
-                        <i class="fa-solid fa-plus-circle"></i>
-                        <span>添加新题目（支持选择/填空/图片上传/自定义时间）</span>
-                    </h4>
-
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div class="space-y-2">
-                            <label class="text-xs font-semibold text-gray-300">选择分类</label>
-                            <select id="cms-q-category" class="w-full px-4 py-3 rounded-xl bg-anime-dark border border-anime-border text-white focus:outline-none focus:border-cyan-400"></select>
-                        </div>
-                        <div class="space-y-2">
-                            <label class="text-xs font-semibold text-gray-300">题目类型</label>
-                            <select id="cms-q-type" onchange="handleQuestionTypeChange()" class="w-full px-4 py-3 rounded-xl bg-anime-dark border border-anime-border text-white focus:outline-none focus:border-cyan-400">
-                                <option value="choice">选择题 (Choice)</option>
-                                <option value="blank">填空题 (Fill in the blank)</option>
-                                <option value="audio">音频题 (Audio)</option>
-                                <option value="video">视频/图像题 (Image/Video)</option>
-                            </select>
-                        </div>
-                        <div class="space-y-2">
-                            <label class="text-xs font-semibold text-gray-300">自定义答题时间 (秒)</label>
-                            <input type="number" id="cms-q-timer" value="25" min="5" max="120" class="w-full px-4 py-3 rounded-xl bg-anime-dark border border-anime-border text-white focus:outline-none focus:border-cyan-400" required>
-                        </div>
+                    <div>
+                        <label class="block text-cyan-400 mb-1">Auth Domain</label>
+                        <input type="text" id="fb-auth-domain" placeholder="project.firebaseapp.com" class="w-full p-3 bg-black border-2 border-cyan-400 text-white font-mono text-base">
                     </div>
-
-                    <div class="space-y-2">
-                        <label class="text-xs font-semibold text-gray-300">题目标题 / 问题描述</label>
-                        <textarea id="cms-q-title" rows="2" placeholder="输入问题..." class="w-full px-4 py-3 rounded-xl bg-anime-dark border border-anime-border text-white focus:outline-none focus:border-cyan-400" required></textarea>
+                    <div>
+                        <label class="block text-cyan-400 mb-1">Project ID</label>
+                        <input type="text" id="fb-project-id" placeholder="your-project-id" class="w-full p-3 bg-black border-2 border-cyan-400 text-white font-mono text-base">
                     </div>
-
-                    <div class="space-y-2">
-                        <label class="text-xs font-semibold text-gray-300">媒体资源链接或本地上传</label>
-                        <div class="flex gap-4 items-center">
-                            <input type="text" id="cms-q-media" placeholder="https://... 或点击右侧上传本地图片" class="w-full px-4 py-3 rounded-xl bg-anime-dark border border-anime-border text-white focus:outline-none focus:border-cyan-400 text-sm">
-                            <label class="px-5 py-3 rounded-xl bg-anime-border hover:bg-cyan-500/20 hover:text-cyan-400 text-gray-200 text-xs font-bold cursor-pointer transition-all shrink-0 border border-anime-border flex items-center space-x-2">
-                                <i class="fa-solid fa-upload"></i>
-                                <span>上传本地图片</span>
-                                <input type="file" accept="image/*" onchange="handleImageUpload(event)" class="hidden">
-                            </label>
-                        </div>
-                        <div class="pt-2">
-                            <img id="cms-image-preview" src="" alt="预览图" class="hidden h-32 rounded-xl object-cover border border-anime-border">
-                        </div>
+                    <div class="flex gap-3 pt-2">
+                        <button type="button" onclick="switchView('home')" class="w-1/2 py-3 arcade-btn bg-gray-800 text-gray-300 font-bold uppercase text-sm">BACK</button>
+                        <button type="submit" class="w-1/2 py-3 arcade-btn bg-pink-600 text-white font-bold uppercase text-sm">CONNECT</button>
                     </div>
-
-                    <div id="cms-choice-options-box" class="space-y-4 pt-2">
-                        <label class="text-xs font-semibold text-cyan-400 uppercase tracking-wider">选择题 4 个选项与正确答案</label>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <input type="text" id="cms-opt-0" placeholder="选项 A" class="px-4 py-3 rounded-xl bg-anime-dark border border-anime-border text-white focus:outline-none focus:border-cyan-400">
-                            <input type="text" id="cms-opt-1" placeholder="选项 B" class="px-4 py-3 rounded-xl bg-anime-dark border border-anime-border text-white focus:outline-none focus:border-cyan-400">
-                            <input type="text" id="cms-opt-2" placeholder="选项 C" class="px-4 py-3 rounded-xl bg-anime-dark border border-anime-border text-white focus:outline-none focus:border-cyan-400">
-                            <input type="text" id="cms-opt-3" placeholder="选项 D" class="px-4 py-3 rounded-xl bg-anime-dark border border-anime-border text-white focus:outline-none focus:border-cyan-400">
-                        </div>
-                        <div class="space-y-2 pt-2">
-                            <label class="text-xs font-semibold text-gray-300">正确答案索引 (A=0, B=1, C=2, D=3)</label>
-                            <select id="cms-correct-index" class="w-full sm:w-48 px-4 py-3 rounded-xl bg-anime-dark border border-anime-border text-white focus:outline-none focus:border-cyan-400">
-                                <option value="0">选项 A 正确</option>
-                                <option value="1">选项 B 正确</option>
-                                <option value="2">选项 C 正确</option>
-                                <option value="3">选项 D 正确</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div id="cms-blank-answer-box" class="hidden space-y-2 pt-2">
-                        <label class="text-xs font-semibold text-cyan-400 uppercase tracking-wider">填空题标准答案</label>
-                        <input type="text" id="cms-blank-answer" placeholder="请输入填空题标准答案" class="w-full px-4 py-3 rounded-xl bg-anime-dark border border-anime-border text-white focus:outline-none focus:border-cyan-400">
-                    </div>
-
-                    <div class="space-y-2">
-                        <label class="text-xs font-semibold text-gray-300">答题解析说明</label>
-                        <textarea id="cms-q-analysis" rows="2" placeholder="输入剧情解析..." class="w-full px-4 py-3 rounded-xl bg-anime-dark border border-anime-border text-white focus:outline-none focus:border-cyan-400"></textarea>
-                    </div>
-
-                    <button type="submit" id="cms-form-submit-btn" class="w-full py-4 rounded-2xl bg-gradient-to-r from-fuchsia-600 to-cyan-500 hover:from-fuchsia-500 text-white font-bold shadow-neon transition-all flex items-center justify-center space-x-2">
-                        <i class="fa-solid fa-plus"></i>
-                        <span>保存并添加题目到题库</span>
-                    </button>
                 </form>
-
-                <div class="space-y-4 pt-6 border-t border-anime-border">
-                    <h4 class="text-lg font-bold text-white flex items-center space-x-2">
-                        <i class="fa-solid fa-list-check text-cyan-400"></i>
-                        <span>当前本地题库列表管理</span>
-                    </h4>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr class="border-b border-anime-border text-xs text-gray-400 uppercase tracking-wider">
-                                    <th class="py-3 px-4">编号</th>
-                                    <th class="py-3 px-4">分类</th>
-                                    <th class="py-3 px-4">题目标题</th>
-                                    <th class="py-3 px-4">类型</th>
-                                    <th class="py-3 px-4 text-right">操作</th>
-                                </tr>
-                            </thead>
-                            <tbody id="cms-questions-tbody"></tbody>
-                        </table>
-                    </div>
-                </div>
             </div>
-        </div>
+        </section>
 
     </main>
 
-    <footer class="border-t border-anime-border/60 bg-anime-card/30 mt-12 py-6 text-center text-xs text-gray-400 font-mono">
-        <p>Dream Ring Anime Universe © 2026 - Secure Admin & Cloud Leaderboard</p>
+    <!-- FOOTER -->
+    <footer class="border-t-4 border-pink-500 bg-black py-6 text-center text-gray-400 arcade-font text-lg">
+        <p>© 2026 ARCADE UNIVERSE. INSERT COIN & PLAY HARD.</p>
     </footer>
 
 </body>
